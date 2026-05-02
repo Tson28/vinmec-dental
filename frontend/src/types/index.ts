@@ -18,14 +18,6 @@ export interface AuthState {
   user: User | null;
 }
 
-export interface Service {
-  _id: string;
-  name: string;
-  category: string;
-  duration: number;
-  price: number;
-}
-
 export interface Appointment {
   id: string;
   patientId: string;
@@ -64,13 +56,14 @@ export interface DentalImage {
 }
 
 export interface Service {
-  id: string;
+  _id: string;
+  id?: string; // For backward compatibility
   name: string;
-  description: string;
+  description?: string;
   duration: number;
   price: number;
   category: string;
-  active: boolean;
+  active?: boolean;
 }
 
 export interface DentalScore {

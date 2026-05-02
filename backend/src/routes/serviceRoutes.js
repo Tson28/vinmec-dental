@@ -1,37 +1,48 @@
-'use strict';
+"use strict";
 
-const router = require('express').Router();
-const { getAll, getMine, getById, create, update, remove } = require('../controllers/recordController');
-const { auth, authorize } = require('../middleware/auth');
-const validate = require('../middleware/validate');
-const Joi = require('joi');
+const router = require("express").Router();
+const {
+  getAll,
+  getById,
+  create,
+  update,
+  remove,
+  removePermanent,
+  getCategories,
+} = require("../controllers/serviceController");
+const { auth, authorize } = require("../middleware/auth");
+const validate = require("../middleware/validate");
+const {
+  createServiceSchema,
+  updateServiceSchema,
+} = require("../utils/validator");
 
-const createSchema = {
-  body: Joi.object({
-    patientId:      Joi.string().required(),
-    appointmentId:  Joi.string().allow('', null),
-    date:           Joi.string().allow('', null),
-    chiefComplaint: Joi.string().allow('', null),
-    diagnosis:      Joi.string().required(),
-    treatment:      Joi.string().required(),
-    prescription:   Joi.string().allow('', null),
-    notes:          Joi.string().allow('', null),
-    followUpDate:   Joi.string().allow('', null),
-    teeth:          Joi.array().items(Joi.object()).allow(null),
-    vitalSigns:     Joi.object().allow(null),
-  }),
-};
+// GET /api/services         [all, public]
+router.get("/", getAll);
+// GET /api/services/categories  [all, public]
+router.get("/categories", getCategories);
+// GET /api/services/:id      [all, public]
+router.get("/:id", getById);
 
-// Patient reads own records
-router.get('/me', auth, authorize('patient'), getMine);
-
-// Doctor & Admin full access
-router.get('/',    auth, authorize('admin', 'doctor'), getAll);
-router.post('/',   auth, authorize('admin', 'doctor'), validate(createSchema), create);
-
-// Shared view (ownership enforced in controller)
-router.get('/:id',    auth, getById);
-router.put('/:id',    auth, authorize('admin', 'doctor'), update);
-router.delete('/:id', auth, authorize('admin'), remove);
+// POST /api/services         [admin]
+router.post(
+  "/",
+  auth,
+  authorize("admin"),
+  validate(createServiceSchema),
+  create,
+);
+// PUT /api/services/:id      [admin]
+router.put(
+  "/:id",
+  auth,
+  authorize("admin"),
+  validate(updateServiceSchema),
+  update,
+);
+// DELETE /api/services/:id   [admin – soft delete]
+router.delete("/:id", auth, authorize("admin"), remove);
+// DELETE /api/services/:id/permanent [admin – hard delete]
+router.delete("/:id/permanent", auth, authorize("admin"), removePermanent);
 
 module.exports = router;
