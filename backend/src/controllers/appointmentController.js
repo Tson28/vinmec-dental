@@ -1,6 +1,7 @@
 "use strict";
 
 const Appointment = require("../models/Appointment");
+const Doctor = require("../models/Doctor");
 const User = require("../models/User");
 const Service = require("../models/Service");
 const { sendSuccess, sendError, sendPaginated } = require("../utils/response");
@@ -90,11 +91,13 @@ const create = async (req, res) => {
   try {
     const { doctorId, serviceId, date, time, notes } = req.body;
 
-    // Validate doctor
-    const doctor = await User.findById(doctorId);
-    if (!doctor || doctor.role !== "doctor") {
+    // Validate doctor (doctorId is the Doctor document ID, need to get User ID from it)
+    const doctor = await Doctor.findById(doctorId).populate("user");
+    if (!doctor || !doctor.user || !doctor.user.isActive) {
       return sendError(res, 404, "Doctor not found.");
     }
+
+    const userId = doctor.user._id;
 
     // Validate service
     let service = null;
@@ -110,7 +113,7 @@ const create = async (req, res) => {
 
     // Check for time conflict on same doctor
     const conflict = await Appointment.findOne({
-      doctor: doctorId,
+      doctor: userId,
       date,
       time,
       status: { $in: ["pending", "confirmed"] },
@@ -126,7 +129,7 @@ const create = async (req, res) => {
     const appointment = await Appointment.create({
       patient: req.user._id,
       patientName: req.user.name,
-      doctor: doctorId,
+      doctor: userId,
       doctorName: doctor.name,
       service: serviceId || undefined,
       serviceName,
