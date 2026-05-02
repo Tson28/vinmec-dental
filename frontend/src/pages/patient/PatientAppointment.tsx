@@ -171,10 +171,11 @@ function BookingForm({
         >
           <option value="">Select service...</option>
           {services.map((s) => (
-            <option key={s.id} value={s.id}>
+            <option key={s._id} value={s._id}>
               {s.name} – {Number(s.price).toLocaleString("vi-VN")} ₫
             </option>
-          ))}
+          ))
+        }
         </select>
       </div>
       <div>
@@ -187,10 +188,11 @@ function BookingForm({
         >
           <option value="">Select doctor...</option>
           {doctors.map((d) => (
-            <option key={d.id} value={d.id}>
+            <option key={d._id} value={d._id}>
               Dr. {d.name} – {d.specialization || "General"}
             </option>
-          ))}
+          ))
+        }
         </select>
       </div>
       <div className="grid grid-cols-2 gap-3">

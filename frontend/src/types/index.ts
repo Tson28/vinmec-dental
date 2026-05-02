@@ -1,7 +1,8 @@
 export type Role = "admin" | "doctor" | "patient";
 
 export interface User {
-  id: string;
+  _id: string;
+  id?: string; // For backward compatibility
   name: string;
   email: string;
   role: Role;
