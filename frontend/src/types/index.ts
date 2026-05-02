@@ -1,0 +1,96 @@
+export type Role = "admin" | "doctor" | "patient";
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+  phone?: string;
+  dob?: string;
+  avatar?: string;
+  specialization?: string;
+  createdAt?: string;
+}
+
+export interface AuthState {
+  token: string | null;
+  role: Role | null;
+  user: User | null;
+}
+
+export interface Service {
+  _id: string;
+  name: string;
+  category: string;
+  duration: number;
+  price: number;
+}
+
+export interface Appointment {
+  id: string;
+  patientId: string;
+  patientName: string;
+  doctorId: string;
+  doctorName: string;
+  service: Service | string;
+  date: string;
+  time: string;
+  status: "pending" | "confirmed" | "completed" | "cancelled";
+  notes?: string;
+}
+
+export interface MedicalRecord {
+  id: string;
+  patientId: string;
+  patientName: string;
+  doctorId: string;
+  doctorName: string;
+  diagnosis: string;
+  treatment: string;
+  prescription?: string;
+  date: string;
+  notes?: string;
+}
+
+export interface DentalImage {
+  id: string;
+  patientId: string;
+  patientName: string;
+  doctorId?: string;
+  url: string;
+  type: "xray" | "photo" | "scan";
+  description?: string;
+  uploadedAt: string;
+}
+
+export interface Service {
+  id: string;
+  name: string;
+  description: string;
+  duration: number;
+  price: number;
+  category: string;
+  active: boolean;
+}
+
+export interface DentalScore {
+  overall: number;
+  gumHealth: number;
+  toothDecay: number;
+  alignment: number;
+  cleanliness: number;
+  history: Array<{ date: string; score: number }>;
+}
+
+export interface ChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  timestamp: string;
+}
+
+export interface ApiResponse<T> {
+  data: T;
+  message?: string;
+  success: boolean;
+}
