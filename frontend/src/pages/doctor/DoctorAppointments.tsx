@@ -21,7 +21,6 @@ const approvalColor: Record<string, string> = {
 };
 
 export default function DoctorAppointments() {
-  
   const {
     data: appointments,
     loading,
