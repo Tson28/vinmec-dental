@@ -37,14 +37,14 @@
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    VinaMec System                        │
+│                    VinaMec System                       │
 │                                                         │
-│   👨‍💼 Admin        👨‍⚕️ Doctor       🧑‍🤝‍🧑 Patient         │
-│   ─────────────  ─────────────  ─────────────          │
-│   Quản lý toàn   Xem bệnh nhân  Đặt lịch hẹn           │
-│   hệ thống       Hồ sơ bệnh án  Xem kết quả            │
+│   👨‍💼 Admin        👨‍⚕️ Doctor       🧑‍🤝‍🧑 Patient            │
+│   ─────────────  ─────────────  ─────────────           │ 
+│   Quản lý toàn   Xem bệnh nhân  Đặt lịch hẹn            │
+│   hệ thống       Hồ sơ bệnh án  Xem kết quả             │
 │   Báo cáo KPIs   AI Chatbot     AI Chatbot              │
-│   Dịch vụ        X-Ray viewer   Điểm sức khỏe          │
+│   Dịch vụ        X-Ray viewer   Điểm sức khỏe           │
 └─────────────────────────────────────────────────────────┘
 ```
 
