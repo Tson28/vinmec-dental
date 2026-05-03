@@ -11,6 +11,8 @@ const {
   remove,
   getStats,
   getAvailableSlots,
+  approve,
+  reject,
 } = require("../controllers/appointmentController");
 const { auth, authorize } = require("../middleware/auth");
 const validate = require("../middleware/validate");
@@ -44,6 +46,8 @@ router.post("/", auth, authorize("patient"), validate(createSchema), create);
 // Shared (ownership enforced in controller)
 router.get("/:id", auth, getById);
 router.put("/:id/cancel", auth, cancel);
+router.put("/:id/approve", auth, authorize("doctor"), approve);
+router.put("/:id/reject", auth, authorize("doctor"), reject);
 
 // Doctor + Admin management
 router.get("/", auth, authorize("admin", "doctor"), getAll);

@@ -317,6 +317,83 @@ const getAvailableSlots = async (req, res) => {
   }
 };
 
+// PUT /api/appointments/:id/approve  [doctor – approve own appointments]
+const approve = async (req, res) => {
+  try {
+    const appointment = await Appointment.findById(req.params.id);
+    if (!appointment) return sendError(res, 404, "Appointment not found.");
+
+    // Only doctor can approve their own appointments
+    if (appointment.doctor.toString() !== req.user._id.toString()) {
+      return sendError(res, 403, "Access denied. Not your appointment.");
+    }
+
+    if (appointment.approvalStatus !== "pending") {
+      return sendError(
+        res,
+        400,
+        `Appointment approval status is already ${appointment.approvalStatus}.`,
+      );
+    }
+
+    appointment.approvalStatus = "approved";
+    appointment.status = "confirmed";
+    appointment.approvedBy = req.user._id;
+    appointment.approvedAt = new Date();
+    appointment.doctorNotes = req.body.notes || appointment.doctorNotes;
+
+    await appointment.save();
+    await appointment.populate([
+      { path: "patient", select: "name email phone" },
+      { path: "approvedBy", select: "name email" },
+    ]);
+
+    return sendSuccess(res, 200, "Appointment approved", appointment);
+  } catch (err) {
+    return sendError(res, 500, err.message);
+  }
+};
+
+// PUT /api/appointments/:id/reject  [doctor – reject own appointments]
+const reject = async (req, res) => {
+  try {
+    const appointment = await Appointment.findById(req.params.id);
+    if (!appointment) return sendError(res, 404, "Appointment not found.");
+
+    // Only doctor can reject their own appointments
+    if (appointment.doctor.toString() !== req.user._id.toString()) {
+      return sendError(res, 403, "Access denied. Not your appointment.");
+    }
+
+    if (appointment.approvalStatus !== "pending") {
+      return sendError(
+        res,
+        400,
+        `Appointment approval status is already ${appointment.approvalStatus}.`,
+      );
+    }
+
+    const reason = req.body.reason || "Doctor rejected the appointment";
+
+    appointment.approvalStatus = "rejected";
+    appointment.status = "cancelled";
+    appointment.rejectionReason = reason;
+    appointment.approvedBy = req.user._id;
+    appointment.approvedAt = new Date();
+    appointment.cancelledBy = "doctor";
+
+    await appointment.save();
+    await appointment.populate([
+      { path: "patient", select: "name email phone" },
+      { path: "approvedBy", select: "name email" },
+    ]);
+
+    return sendSuccess(res, 200, "Appointment rejected", appointment);
+  } catch (err) {
+    return sendError(res, 500, err.message);
+  }
+};
+
 module.exports = {
   getAll,
   getMine,
@@ -327,4 +404,6 @@ module.exports = {
   remove,
   getStats,
   getAvailableSlots,
+  approve,
+  reject,
 };

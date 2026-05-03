@@ -4,6 +4,7 @@ import Table from "../../components/ui/Table";
 import Modal from "../../components/ui/Modal";
 import { appointmentApi } from "../../services/api";
 import { useApi } from "../../hooks/useApi";
+import { useToast } from "../../hooks/useToast";
 import type { Appointment } from "../../types";
 
 const statusColor: Record<string, string> = {
@@ -13,23 +14,77 @@ const statusColor: Record<string, string> = {
   cancelled: "badge-red",
 };
 
+const approvalColor: Record<string, string> = {
+  pending: "badge-amber",
+  approved: "badge-green",
+  rejected: "badge-red",
+};
+
 export default function DoctorAppointments() {
   const {
     data: appointments,
     loading,
     refetch,
   } = useApi<Appointment[]>(() => appointmentApi.getAll());
+  const { toast } = useToast();
   const [selected, setSelected] = useState<Appointment | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
   const [filter, setFilter] = useState("all");
+  const [actionLoading, setActionLoading] = useState(false);
 
   const filtered = (appointments || []).filter(
     (a) => filter === "all" || a.status === filter,
   );
 
   const updateStatus = async (id: string, status: string) => {
-    await appointmentApi.update(id, { status });
-    refetch();
+    try {
+      setActionLoading(true);
+      await appointmentApi.update(id, { status });
+      toast.success("Appointment updated successfully");
+      refetch();
+    } catch (error) {
+      toast.error("Failed to update appointment");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleApprove = async (id: string) => {
+    try {
+      setActionLoading(true);
+      await appointmentApi.approve(id);
+      toast.success("Appointment approved successfully");
+      refetch();
+      setShowModal(false);
+      setSelected(null);
+    } catch (error) {
+      toast.error("Failed to approve appointment");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    try {
+      if (!rejectReason.trim()) {
+        toast.error("Please provide a reason for rejection");
+        return;
+      }
+      setActionLoading(true);
+      await appointmentApi.reject(id, { reason: rejectReason });
+      toast.success("Appointment rejected successfully");
+      refetch();
+      setShowModal(false);
+      setShowRejectModal(false);
+      setRejectReason("");
+      setSelected(null);
+    } catch (error) {
+      toast.error("Failed to reject appointment");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const columns = [
@@ -48,6 +103,17 @@ export default function DoctorAppointments() {
     { key: "date", header: "Date" },
     { key: "time", header: "Time" },
     {
+      key: "approvalStatus",
+      header: "Approval",
+      render: (a: Appointment) => (
+        <span
+          className={`badge ${approvalColor[(a as any).approvalStatus || "pending"]}`}
+        >
+          {(a as any).approvalStatus || "pending"}
+        </span>
+      ),
+    },
+    {
       key: "status",
       header: "Status",
       render: (a: Appointment) => (
@@ -64,26 +130,41 @@ export default function DoctorAppointments() {
               setSelected(a);
               setShowModal(true);
             }}
-            className="text-xs text-dental-600 font-medium"
+            className="text-xs text-dental-600 font-medium hover:underline"
           >
             View
           </button>
-          {a.status === "pending" && (
-            <button
-              onClick={() => updateStatus(a.id, "confirmed")}
-              className="text-xs text-emerald-600 font-medium"
-            >
-              Confirm
-            </button>
+          {(a as any).approvalStatus === "pending" && (
+            <>
+              <button
+                onClick={() => handleApprove(a.id)}
+                className="text-xs text-emerald-600 font-medium hover:underline"
+                disabled={actionLoading}
+              >
+                Approve
+              </button>
+              <button
+                onClick={() => {
+                  setSelected(a);
+                  setShowRejectModal(true);
+                }}
+                className="text-xs text-red-600 font-medium hover:underline"
+                disabled={actionLoading}
+              >
+                Reject
+              </button>
+            </>
           )}
-          {a.status === "confirmed" && (
-            <button
-              onClick={() => updateStatus(a.id, "completed")}
-              className="text-xs text-mint-600 font-medium"
-            >
-              Complete
-            </button>
-          )}
+          {a.status === "confirmed" &&
+            (a as any).approvalStatus === "approved" && (
+              <button
+                onClick={() => updateStatus(a.id, "completed")}
+                className="text-xs text-mint-600 font-medium hover:underline"
+                disabled={actionLoading}
+              >
+                Complete
+              </button>
+            )}
         </div>
       ),
     },
@@ -127,49 +208,69 @@ export default function DoctorAppointments() {
         title="Appointment Details"
       >
         {selected && (
-          <div className="space-y-3">
-            {[
-              ["Patient", selected.patientName],
-              ["Doctor", selected.doctorName],
-              [
-                "Service",
-                typeof selected.service === "string"
-                  ? selected.service
-                  : selected.service?.name || "General Consultation",
-              ],
-              ["Date", selected.date],
-              ["Time", selected.time],
-              ["Status", selected.status],
-              ["Notes", selected.notes || "—"],
-            ].map(([k, v]) => (
-              <div key={k} className="flex gap-3">
-                <span className="label w-24 flex-shrink-0">{k}</span>
-                <span className="text-sm text-surface-800">{v}</span>
-              </div>
-            ))}
-            <div className="flex gap-3 pt-4">
-              {selected.status === "pending" && (
-                <button
-                  onClick={() => {
-                    updateStatus(selected.id, "confirmed");
-                    setShowModal(false);
-                  }}
-                  className="btn-primary flex-1"
-                >
-                  Confirm
-                </button>
+          <div className="space-y-4">
+            <div className="space-y-3">
+              {[
+                ["Patient", selected.patientName],
+                ["Doctor", selected.doctorName],
+                [
+                  "Service",
+                  typeof selected.service === "string"
+                    ? selected.service
+                    : selected.service?.name || "General Consultation",
+                ],
+                ["Date", selected.date],
+                ["Time", selected.time],
+                [
+                  "Approval Status",
+                  (selected as any).approvalStatus || "pending",
+                ],
+                ["Status", selected.status],
+                ["Patient Notes", selected.notes || "—"],
+                ["Doctor Notes", selected.doctorNotes || "—"],
+                ...((selected as any).rejectionReason
+                  ? [["Rejection Reason", (selected as any).rejectionReason]]
+                  : []),
+              ].map(([k, v]) => (
+                <div key={k} className="flex gap-3">
+                  <span className="label w-32 flex-shrink-0">{k}</span>
+                  <span className="text-sm text-surface-800">{v}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-2 pt-4 flex-wrap">
+              {(selected as any).approvalStatus === "pending" && (
+                <>
+                  <button
+                    onClick={() => handleApprove(selected.id)}
+                    className="btn-primary flex-1 min-w-fit"
+                    disabled={actionLoading}
+                  >
+                    {actionLoading ? "Processing..." : "Approve"}
+                  </button>
+                  <button
+                    onClick={() => setShowRejectModal(true)}
+                    className="btn-danger flex-1 min-w-fit"
+                    disabled={actionLoading}
+                  >
+                    Reject
+                  </button>
+                </>
               )}
-              {selected.status === "confirmed" && (
-                <button
-                  onClick={() => {
-                    updateStatus(selected.id, "completed");
-                    setShowModal(false);
-                  }}
-                  className="btn-primary flex-1"
-                >
-                  Mark Complete
-                </button>
-              )}
+              {selected.status === "confirmed" &&
+                (selected as any).approvalStatus === "approved" && (
+                  <button
+                    onClick={() => {
+                      updateStatus(selected.id, "completed");
+                      setShowModal(false);
+                    }}
+                    className="btn-success flex-1"
+                    disabled={actionLoading}
+                  >
+                    Mark Complete
+                  </button>
+                )}
               <button
                 onClick={() => setShowModal(false)}
                 className="btn-secondary flex-1"
@@ -179,6 +280,48 @@ export default function DoctorAppointments() {
             </div>
           </div>
         )}
+      </Modal>
+
+      <Modal
+        open={showRejectModal}
+        onClose={() => {
+          setShowRejectModal(false);
+          setRejectReason("");
+        }}
+        title="Reject Appointment"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-surface-600">
+            Please provide a reason for rejecting this appointment. The patient
+            will be notified.
+          </p>
+          <textarea
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+            placeholder="Enter reason for rejection..."
+            className="w-full p-2 border border-surface-300 rounded-lg text-sm focus:outline-none focus:border-dental-600"
+            rows={4}
+          />
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleReject(selected?.id || "")}
+              className="btn-danger flex-1"
+              disabled={actionLoading || !rejectReason.trim()}
+            >
+              {actionLoading ? "Processing..." : "Reject Appointment"}
+            </button>
+            <button
+              onClick={() => {
+                setShowRejectModal(false);
+                setRejectReason("");
+              }}
+              className="btn-secondary flex-1"
+              disabled={actionLoading}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
       </Modal>
     </DashboardLayout>
   );

@@ -28,8 +28,19 @@ export interface Appointment {
   service: Service | string;
   date: string;
   time: string;
-  status: "pending" | "confirmed" | "completed" | "cancelled";
+  status:
+    | "pending"
+    | "confirmed"
+    | "completed"
+    | "cancelled"
+    | "approved"
+    | "rejected";
+  approvalStatus?: "pending" | "approved" | "rejected";
   notes?: string;
+  doctorNotes?: string;
+  rejectionReason?: string;
+  approvedBy?: string;
+  approvedAt?: string;
 }
 
 export interface MedicalRecord {
