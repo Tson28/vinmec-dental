@@ -14,7 +14,28 @@ api.interceptors.request.use((config) => {
 });
 
 api.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    // Transform _id to id for API responses
+    if (res.data) {
+      const transformData = (data: any): any => {
+        if (Array.isArray(data)) {
+          return data.map(transformData);
+        }
+        if (data && typeof data === "object" && data._id && !data.id) {
+          return { ...data, id: data._id };
+        }
+        return data;
+      };
+
+      // Transform nested data, pagination results, etc
+      if (res.data.data) {
+        res.data.data = transformData(res.data.data);
+      } else {
+        res.data = transformData(res.data);
+      }
+    }
+    return res;
+  },
   (err) => {
     if (err.response?.status === 401) {
       localStorage.removeItem("token");
