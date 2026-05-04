@@ -22,22 +22,34 @@ export default function DoctorChat() {
   const loadChatHistory = async () => {
     try {
       const res = await chatApi.getHistory();
-      const hist = res.data?.data || res.data || [];
-      if (Array.isArray(hist)) {
-        const formattedMessages = hist.map((msg) => ({
-          id: msg.id || Date.now().toString(),
-          sender: {
-            id: msg.senderId || "ai",
-            name: msg.senderName || "AI Assistant",
-            avatar: msg.senderAvatar,
-          },
-          type: msg.type || ("text" as const),
-          content: msg.content,
-          imageUrl: msg.imageUrl,
-          audioUrl: msg.audioUrl,
-          timestamp: msg.timestamp || new Date().toISOString(),
-          isOwn: msg.senderId === user?.id || msg.senderId === user?._id,
-        }));
+      // API returns { messages: [...] } structure
+      const chatData = res.data?.data?.[0] || res.data?.[0] || res.data;
+      const historyMessages = Array.isArray(chatData)
+        ? chatData
+        : chatData?.messages || [];
+
+      if (Array.isArray(historyMessages)) {
+        const formattedMessages = historyMessages.map((msg, idx) => {
+          const isOwnMessage = msg.role === "user";
+          return {
+            id: msg.id || `${idx}-${Date.now()}`,
+            sender: {
+              id: isOwnMessage
+                ? user?._id || user?.id || "user"
+                : "ai-assistant",
+              name: isOwnMessage
+                ? user?.name || "You"
+                : "AI Clinical Assistant",
+              avatar: isOwnMessage ? user?.avatar : undefined,
+            },
+            type: (msg.type || "text") as "text" | "image" | "audio",
+            content: msg.content,
+            imageUrl: msg.imageUrl,
+            audioUrl: msg.audioUrl,
+            timestamp: msg.timestamp || new Date().toISOString(),
+            isOwn: isOwnMessage,
+          };
+        });
         setMessages(formattedMessages);
       }
     } catch (error) {
