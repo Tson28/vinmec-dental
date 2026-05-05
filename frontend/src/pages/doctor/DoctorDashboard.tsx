@@ -141,7 +141,7 @@ export default function DoctorDashboard() {
                   href: "/doctor/appointments",
                 },
                 { icon: "📋", label: "Records", href: "/doctor/records" },
-                { icon: "🤖", label: "AI Chatbot", href: "/doctor/chat" },
+                { icon: "💬", label: "Messages", href: "/doctor/chat" },
                 {
                   icon: "🖼️",
                   label: "X-Rays & Images",

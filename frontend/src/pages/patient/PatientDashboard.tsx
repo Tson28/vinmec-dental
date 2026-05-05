@@ -165,7 +165,7 @@ export default function PatientDashboard() {
                 { icon: "📋", label: "View Records", href: "/patient/records" },
                 { icon: "🖼️", label: "My Images", href: "/patient/images" },
                 { icon: "⭐", label: "Dental Score", href: "/patient/score" },
-                { icon: "🤖", label: "AI Chatbot", href: "/patient/chat" },
+                { icon: "💬", label: "Messages", href: "/patient/chat" },
                 { icon: "👤", label: "My Profile", href: "/patient/profile" },
               ].map((a) => (
                 <a

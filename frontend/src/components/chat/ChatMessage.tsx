@@ -211,13 +211,13 @@ export default function ChatMessage({
               className={`flex flex-col max-w-xs ${msg.isOwn ? "items-end" : "items-start"}`}
             >
               <p
-                className={`text-xs font-medium ${msg.isOwn ? "text-right" : ""} text-surface-500 mb-1`}
+                className={`text-xs font-medium ${msg.isOwn ? "text-right" : ""} text-black mb-1`}
               >
                 {msg.sender.name}
               </p>
 
               <div
-                className={`rounded-2xl px-4 py-2.5 ${msg.isOwn ? "bg-dental-600 text-white rounded-br-none" : "bg-surface-100 text-surface-900 rounded-bl-none"}`}
+                className={`rounded-2xl px-4 py-2.5 ${msg.isOwn ? "bg-dental-600 text-black rounded-br-none" : "bg-surface-100 text-black rounded-bl-none"}`}
               >
                 {msg.type === "text" && (
                   <p className="text-sm break-words">{msg.content}</p>
@@ -252,7 +252,7 @@ export default function ChatMessage({
               </div>
 
               <p
-                className={`text-xs text-surface-400 mt-1 ${msg.isOwn ? "text-right" : ""}`}
+                className={`text-xs text-black mt-1 ${msg.isOwn ? "text-right" : ""}`}
               >
                 {new Date(msg.timestamp).toLocaleTimeString([], {
                   hour: "2-digit",

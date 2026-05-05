@@ -1,5 +1,5 @@
 const express = require("express");
-const { authRequired } = require("../middleware/auth");
+const { auth } = require("../middleware/auth");
 const {
   getConversations,
   getConversation,
@@ -10,7 +10,7 @@ const {
 
 const router = express.Router();
 
-router.use(authRequired);
+router.use(auth);
 
 // GET /api/conversations - Get all conversations
 router.get("/", getConversations);

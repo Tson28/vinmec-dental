@@ -199,24 +199,24 @@ const getAvailableUsers = async (req, res) => {
     const userId = req.user._id;
     const userRole = req.user.role;
 
-    let query = {};
+    let query = { _id: { $ne: userId }, isActive: true }; // Always exclude current user and only active users
+
     if (userRole === "patient") {
       // Patients can chat with doctors
       query.role = "doctor";
     } else if (userRole === "doctor") {
       // Doctors can chat with patients
       query.role = "patient";
-    } else {
-      // Admin can chat with anyone
-      query._id = { $ne: userId };
     }
+    // Admin can chat with anyone (query already set to exclude self)
 
     const users = await User.find(query)
-      .select("name email avatar role specialization -password")
+      .select("name email avatar role")
       .limit(100);
 
     return sendSuccess(res, 200, "Available users", users);
   } catch (err) {
+    console.error("getAvailableUsers error:", err);
     return sendError(res, 500, err.message);
   }
 };
