@@ -1,64 +1,67 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import ChatMessage, { type Message } from "../../components/chat/ChatMessage";
-import { chatApi, imageApi } from "../../services/api";
+import ConversationList from "../../components/chat/ConversationList";
+import { conversationApi, imageApi } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../hooks/useToast";
-import { useApi } from "../../hooks/useApi";
-import type { DentalImage } from "../../types";
+import type { User } from "../../types";
 
 export default function DoctorChat() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { data: allImages } = useApi<DentalImage[]>(() => imageApi.getAll());
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"chat" | "gallery">("chat");
+  const [selectedConversation, setSelectedConversation] = useState<
+    string | null
+  >(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  useEffect(() => {
-    loadChatHistory();
-  }, []);
+  const handleSelectConversation = async (
+    conversationId: string,
+    otherUser: User,
+  ) => {
+    setSelectedConversation(conversationId);
+    setSelectedUser(otherUser);
+    await loadConversationMessages(conversationId);
+  };
 
-  const loadChatHistory = async () => {
+  const loadConversationMessages = async (conversationId: string) => {
     try {
-      const res = await chatApi.getHistory();
-      // API returns { messages: [...] } structure
-      const chatData = res.data?.data?.[0] || res.data?.[0] || res.data;
-      const historyMessages = Array.isArray(chatData)
-        ? chatData
-        : chatData?.messages || [];
+      setLoading(true);
+      const res = await conversationApi.getById(conversationId);
+      const data = res.data?.data;
+      const rawMessages = data?.messages || [];
 
-      if (Array.isArray(historyMessages)) {
-        const formattedMessages = historyMessages.map((msg, idx) => {
-          const isOwnMessage = msg.role === "user";
-          return {
-            id: msg.id || `${idx}-${Date.now()}`,
-            sender: {
-              id: isOwnMessage
-                ? user?._id || user?.id || "user"
-                : "ai-assistant",
-              name: isOwnMessage
-                ? user?.name || "You"
-                : "AI Clinical Assistant",
-              avatar: isOwnMessage ? user?.avatar : undefined,
-            },
-            type: (msg.type || "text") as "text" | "image" | "audio",
-            content: msg.content,
-            imageUrl: msg.imageUrl,
-            audioUrl: msg.audioUrl,
-            timestamp: msg.timestamp || new Date().toISOString(),
-            isOwn: isOwnMessage,
-          };
-        });
-        setMessages(formattedMessages);
-      }
+      const formattedMessages = rawMessages.map((msg: any, idx: number) => ({
+        id: msg._id || `${idx}-${Date.now()}`,
+        sender: {
+          id: msg.sender?._id || msg.sender?.id || msg.sender,
+          name: msg.sender?.name || "Unknown",
+          avatar: msg.sender?.avatar,
+        },
+        type: (msg.type || "text") as "text" | "image" | "audio",
+        content: msg.content,
+        imageUrl: msg.imageUrl,
+        audioUrl: msg.audioUrl,
+        timestamp: msg.timestamp || msg.createdAt || new Date().toISOString(),
+        isOwn:
+          msg.sender?._id?.toString() === user?._id?.toString() ||
+          msg.sender?.toString() === user?._id?.toString() ||
+          msg.sender === user?._id,
+      }));
+
+      setMessages(formattedMessages);
     } catch (error) {
-      console.error("Failed to load chat history:", error);
+      console.error("Failed to load messages:", error);
+      toast.error("Failed to load messages");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSendText = async (content: string) => {
-    if (!user) return;
+    if (!selectedConversation || !user) return;
 
     const userMsg: Message = {
       id: Date.now().toString(),
@@ -73,39 +76,20 @@ export default function DoctorChat() {
       isOwn: true,
     };
     setMessages((prev) => [...prev, userMsg]);
-    setLoading(true);
 
     try {
-      const history = messages.map((m) => ({
-        role: m.isOwn ? "user" : "assistant",
-        content: m.content || m.audioUrl || m.imageUrl || "",
-      }));
-      const res = await chatApi.privateChat(content, history);
-      const aiMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        sender: {
-          id: "ai-assistant",
-          name: "AI Clinical Assistant",
-        },
+      await conversationApi.sendMessage(selectedConversation, {
+        content,
         type: "text",
-        content:
-          res.data?.reply ||
-          res.data?.message ||
-          "I understand. Based on the clinical context, here is my recommendation...",
-        timestamp: new Date().toISOString(),
-        isOwn: false,
-      };
-      setMessages((prev) => [...prev, aiMsg]);
+      });
     } catch (error) {
-      console.error("Chat error:", error);
+      console.error("Failed to send message:", error);
       toast.error("Failed to send message");
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleSendImage = async (file: File) => {
-    if (!user) return;
+    if (!selectedConversation || !user) return;
 
     try {
       setLoading(true);
@@ -132,6 +116,12 @@ export default function DoctorChat() {
         isOwn: true,
       };
       setMessages((prev) => [...prev, userMsg]);
+
+      await conversationApi.sendMessage(selectedConversation, {
+        content: "Image",
+        type: "image",
+        imageUrl,
+      });
       toast.success("Image sent successfully");
     } catch (error) {
       console.error("Image upload error:", error);
@@ -142,7 +132,7 @@ export default function DoctorChat() {
   };
 
   const handleSendAudio = async (file: File) => {
-    if (!user) return;
+    if (!selectedConversation || !user) return;
 
     try {
       setLoading(true);
@@ -170,6 +160,12 @@ export default function DoctorChat() {
         isOwn: true,
       };
       setMessages((prev) => [...prev, userMsg]);
+
+      await conversationApi.sendMessage(selectedConversation, {
+        content: "Voice message",
+        type: "audio",
+        audioUrl,
+      });
       toast.success("Voice message sent successfully");
     } catch (error) {
       console.error("Audio upload error:", error);
@@ -180,98 +176,40 @@ export default function DoctorChat() {
   };
 
   return (
-    <DashboardLayout title="Chat & Gallery">
-      <div className="space-y-4">
-        {/* Tab Navigation */}
-        <div className="flex gap-2 border-b border-surface-200">
-          <button
-            onClick={() => setActiveTab("chat")}
-            className={`px-4 py-3 font-medium text-sm transition ${
-              activeTab === "chat"
-                ? "border-b-2 border-dental-600 text-dental-600"
-                : "text-surface-500 hover:text-surface-700"
-            }`}
-          >
-            💬 Chat
-          </button>
-          <button
-            onClick={() => setActiveTab("gallery")}
-            className={`px-4 py-3 font-medium text-sm transition ${
-              activeTab === "gallery"
-                ? "border-b-2 border-dental-600 text-dental-600"
-                : "text-surface-500 hover:text-surface-700"
-            }`}
-          >
-            📷 Patient Images ({allImages?.length || 0})
-          </button>
+    <DashboardLayout title="Chat">
+      <div className="h-[calc(100vh-160px)] flex gap-4">
+        {/* Conversation List */}
+        <div className="w-80 flex-shrink-0">
+          <ConversationList
+            onSelectConversation={handleSelectConversation}
+            loading={loading}
+          />
         </div>
 
-        {/* Chat Tab */}
-        {activeTab === "chat" && (
-          <div className="h-[calc(100vh-280px)]">
+        {/* Chat Area */}
+        <div className="flex-1 min-w-0">
+          {selectedConversation && selectedUser ? (
             <ChatMessage
               messages={messages}
               onSendText={handleSendText}
               onSendImage={handleSendImage}
               onSendAudio={handleSendAudio}
               loading={loading}
-              title="Private Clinical AI Assistant"
-              placeholder="Ask about diagnosis, treatment protocols, medications..."
+              title={`Chat with ${selectedUser.name || "Patient"}`}
+              placeholder="Type a message..."
             />
-          </div>
-        )}
-
-        {/* Gallery Tab */}
-        {activeTab === "gallery" && (
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-bold text-surface-800 mb-4">
-                Patient Dental Images
-              </h3>
-              {allImages && allImages.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {allImages.map((image) => (
-                    <div
-                      key={image.id}
-                      className="group relative rounded-xl overflow-hidden shadow-card hover:shadow-lg transition bg-white"
-                    >
-                      <img
-                        src={image.url}
-                        alt={image.description || "Dental image"}
-                        className="w-full h-48 object-cover group-hover:scale-105 transition"
-                      />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-end">
-                        <div className="w-full p-3 bg-gradient-to-t from-black/60 to-transparent text-white opacity-0 group-hover:opacity-100 transition">
-                          <p className="text-xs font-medium truncate">
-                            {image.patientName || "Anonymous"}
-                          </p>
-                          {image.description && (
-                            <p className="text-xs line-clamp-2 mt-1">
-                              {image.description}
-                            </p>
-                          )}
-                          <p className="text-xs text-white/70 mt-2">
-                            {new Date(image.uploadedAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="card text-center py-12">
-                  <div className="text-5xl mb-4">📷</div>
-                  <p className="text-surface-600 font-medium mb-2">
-                    No patient images
-                  </p>
-                  <p className="text-surface-400 text-sm">
-                    Images from your patients will appear here
-                  </p>
-                </div>
-              )}
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center bg-white rounded-xl border border-surface-100 shadow-card">
+              <div className="text-5xl mb-4">💬</div>
+              <p className="text-surface-600 font-medium mb-2">
+                Select a conversation
+              </p>
+              <p className="text-sm text-surface-400">
+                Choose a patient from the list to start chatting
+              </p>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </DashboardLayout>
   );

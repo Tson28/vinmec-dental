@@ -137,3 +137,14 @@ export const chatApi = {
     api.post("/chat/private", { message, history }),
   getHistory: () => api.get("/chat/history"),
 };
+
+// ─── Conversations (Peer-to-Peer) ────────────────────────────────────────────
+export const conversationApi = {
+  getAll: () => api.get("/conversations"),
+  getById: (id: string) => api.get(`/conversations/${id}`),
+  getAvailableUsers: () => api.get("/conversations/available-users"),
+  findOrCreate: (otherUserId: string) =>
+    api.post("/conversations/find-or-create", { otherUserId }),
+  sendMessage: (conversationId: string, data: object) =>
+    api.post(`/conversations/${conversationId}/messages`, data),
+};
