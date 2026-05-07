@@ -2,6 +2,7 @@ import { useState } from "react";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import Table from "../../components/ui/Table";
 import Modal from "../../components/ui/Modal";
+import AppointmentCalendar from "../../components/ui/AppointmentCalendar";
 import { appointmentApi } from "../../services/api";
 import { useApi } from "../../hooks/useApi";
 import { useToast } from "../../hooks/useToast";
@@ -33,6 +34,7 @@ export default function DoctorAppointments() {
   const [rejectReason, setRejectReason] = useState("");
   const [filter, setFilter] = useState("all");
   const [actionLoading, setActionLoading] = useState(false);
+  const [viewType, setViewType] = useState<"calendar" | "table">("calendar");
 
   const filtered = (appointments || []).filter(
     (a) => filter === "all" || a.status === filter,
@@ -176,30 +178,70 @@ export default function DoctorAppointments() {
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
             <h2 className="font-display font-bold text-xl text-surface-900">
-              All Appointments
+              Tất cả lịch khám
             </h2>
             <p className="text-sm text-surface-500">
-              {filtered.length} appointments
+              {viewType === "calendar"
+                ? (appointments || []).length
+                : filtered.length}{" "}
+              lịch khám
             </p>
           </div>
-          <div className="flex gap-2">
-            {["all", "pending", "confirmed", "completed", "cancelled"].map(
-              (s) => (
-                <button
-                  key={s}
-                  onClick={() => setFilter(s)}
-                  className={`text-xs px-3 py-1.5 rounded-full font-semibold transition ${filter === s ? "bg-dental-600 text-white" : "bg-surface-100 text-surface-600 hover:bg-surface-200"}`}
-                >
-                  {s.charAt(0).toUpperCase() + s.slice(1)}
-                </button>
-              ),
+          <div className="flex gap-2 items-center flex-wrap">
+            <div className="flex gap-2 bg-surface-100 p-1 rounded-lg">
+              <button
+                onClick={() => setViewType("calendar")}
+                className={`px-3 py-1.5 rounded text-sm font-medium transition ${
+                  viewType === "calendar"
+                    ? "bg-white text-dental-600 shadow-sm"
+                    : "text-surface-600 hover:text-surface-900"
+                }`}
+              >
+                Lịch
+              </button>
+              <button
+                onClick={() => setViewType("table")}
+                className={`px-3 py-1.5 rounded text-sm font-medium transition ${
+                  viewType === "table"
+                    ? "bg-white text-dental-600 shadow-sm"
+                    : "text-surface-600 hover:text-surface-900"
+                }`}
+              >
+                Danh sách
+              </button>
+            </div>
+            {viewType === "table" && (
+              <div className="flex gap-2">
+                {["all", "pending", "confirmed", "completed", "cancelled"].map(
+                  (s) => (
+                    <button
+                      key={s}
+                      onClick={() => setFilter(s)}
+                      className={`text-xs px-3 py-1.5 rounded-full font-semibold transition ${filter === s ? "bg-dental-600 text-white" : "bg-surface-100 text-surface-600 hover:bg-surface-200"}`}
+                    >
+                      {s.charAt(0).toUpperCase() + s.slice(1)}
+                    </button>
+                  ),
+                )}
+              </div>
             )}
           </div>
         </div>
 
-        <div className="card">
-          <Table columns={columns} data={filtered} loading={loading} />
-        </div>
+        {viewType === "calendar" ? (
+          <AppointmentCalendar
+            appointments={appointments || []}
+            onSelectAppointment={(apt) => {
+              setSelected(apt);
+              setShowModal(true);
+            }}
+            loading={loading}
+          />
+        ) : (
+          <div className="card">
+            <Table columns={columns} data={filtered} loading={loading} />
+          </div>
+        )}
       </div>
 
       <Modal

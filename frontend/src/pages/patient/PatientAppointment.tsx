@@ -2,6 +2,7 @@ import { useState } from "react";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import Table from "../../components/ui/Table";
 import Modal from "../../components/ui/Modal";
+import AppointmentCalendar from "../../components/ui/AppointmentCalendar";
 import { appointmentApi, serviceApi, doctorApi } from "../../services/api";
 import { useApi } from "../../hooks/useApi";
 import type { Appointment, Service, User } from "../../types";
@@ -22,6 +23,9 @@ export default function PatientAppointment() {
   const { data: services } = useApi<Service[]>(() => serviceApi.getAll());
   const { data: doctors } = useApi<User[]>(() => doctorApi.getAll());
   const [showModal, setShowModal] = useState(false);
+  const [viewType, setViewType] = useState<"calendar" | "table">("calendar");
+  const [selectedAppointment, setSelectedAppointment] =
+    useState<Appointment | null>(null);
 
   const columns = [
     {
@@ -68,7 +72,7 @@ export default function PatientAppointment() {
   return (
     <DashboardLayout title="My Appointments">
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
             <h2 className="font-display font-bold text-xl text-surface-900">
               Appointments
@@ -77,24 +81,117 @@ export default function PatientAppointment() {
               {(appointments || []).length} total
             </p>
           </div>
-          <button onClick={() => setShowModal(true)} className="btn-primary">
-            + Book Appointment
-          </button>
+          <div className="flex gap-2 items-center">
+            <div className="flex gap-2 bg-surface-100 p-1 rounded-lg">
+              <button
+                onClick={() => setViewType("calendar")}
+                className={`px-3 py-1.5 rounded text-sm font-medium transition ${
+                  viewType === "calendar"
+                    ? "bg-white text-dental-600 shadow-sm"
+                    : "text-surface-600 hover:text-surface-900"
+                }`}
+              >
+                Lịch
+              </button>
+              <button
+                onClick={() => setViewType("table")}
+                className={`px-3 py-1.5 rounded text-sm font-medium transition ${
+                  viewType === "table"
+                    ? "bg-white text-dental-600 shadow-sm"
+                    : "text-surface-600 hover:text-surface-900"
+                }`}
+              >
+                Danh sách
+              </button>
+            </div>
+            <button onClick={() => setShowModal(true)} className="btn-primary">
+              + Đặt lịch
+            </button>
+          </div>
         </div>
 
-        <div className="card">
-          <Table
-            columns={columns}
-            data={appointments || []}
+        {viewType === "calendar" ? (
+          <AppointmentCalendar
+            appointments={appointments || []}
+            onSelectAppointment={(apt) => {
+              setSelectedAppointment(apt);
+            }}
             loading={loading}
           />
-        </div>
+        ) : (
+          <div className="card">
+            <Table
+              columns={columns}
+              data={appointments || []}
+              loading={loading}
+            />
+          </div>
+        )}
       </div>
+
+      {selectedAppointment && (
+        <Modal
+          open={!!selectedAppointment}
+          onClose={() => setSelectedAppointment(null)}
+          title="Chi tiết lịch khám"
+        >
+          <div className="space-y-4">
+            <div className="space-y-3">
+              {[
+                ["Bác sĩ", selectedAppointment.doctorName],
+                [
+                  "Dịch vụ",
+                  typeof selectedAppointment.service === "string"
+                    ? selectedAppointment.service
+                    : selectedAppointment.service?.name || "Khám tổng quát",
+                ],
+                ["Ngày", selectedAppointment.date],
+                ["Giờ", selectedAppointment.time],
+                [
+                  "Trạng thái",
+                  <span
+                    className={`badge ${statusColor[selectedAppointment.status]}`}
+                  >
+                    {selectedAppointment.status}
+                  </span>,
+                ],
+                ["Ghi chú", selectedAppointment.notes || "—"],
+              ].map(([k, v]) => (
+                <div key={k} className="flex gap-3">
+                  <span className="label w-24 flex-shrink-0">{k}</span>
+                  <span className="text-sm text-surface-800">{v}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-2 pt-4">
+              {selectedAppointment.status === "pending" && (
+                <button
+                  onClick={async () => {
+                    await appointmentApi.cancel(selectedAppointment.id);
+                    refetch();
+                    setSelectedAppointment(null);
+                  }}
+                  className="btn-secondary flex-1"
+                >
+                  Hủy lịch
+                </button>
+              )}
+              <button
+                onClick={() => setSelectedAppointment(null)}
+                className="btn-secondary flex-1"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       <Modal
         open={showModal}
         onClose={() => setShowModal(false)}
-        title="Book Appointment"
+        title="Đặt lịch khám"
       >
         <BookingForm
           services={services || []}
@@ -174,8 +271,7 @@ function BookingForm({
             <option key={s._id} value={s._id}>
               {s.name} – {Number(s.price).toLocaleString("vi-VN")} ₫
             </option>
-          ))
-        }
+          ))}
         </select>
       </div>
       <div>
@@ -191,8 +287,7 @@ function BookingForm({
             <option key={d._id} value={d._id}>
               Dr. {d.name} – {d.specialization || "General"}
             </option>
-          ))
-        }
+          ))}
         </select>
       </div>
       <div className="grid grid-cols-2 gap-3">
