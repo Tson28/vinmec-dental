@@ -3,10 +3,12 @@ import DashboardLayout from "../../components/layout/DashboardLayout";
 import StatCard from "../../components/ui/StatCard";
 import { appointmentApi, patientApi, recordApi } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../hooks/useToast";
 import type { Appointment } from "../../types";
 
 export default function DoctorDashboard() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [stats, setStats] = useState({
     patients: 0,
     todayAppts: 0,
@@ -26,12 +28,14 @@ export default function DoctorDashboard() {
           ? a.value.data?.data || a.value.data || []
           : [];
       const today = new Date().toISOString().split("T")[0];
+      const todayAppts = appts.filter((x: Appointment) => x.date === today);
+
       setStats({
         patients:
           p.status === "fulfilled"
             ? (p.value.data?.data || p.value.data || []).length
             : 0,
-        todayAppts: appts.filter((x: Appointment) => x.date === today).length,
+        todayAppts: todayAppts.length,
         records:
           r.status === "fulfilled"
             ? (r.value.data?.data || r.value.data || []).length
@@ -45,9 +49,21 @@ export default function DoctorDashboard() {
           )
           .slice(0, 5),
       );
+
+      // Check for today's appointments
+      if (todayAppts.length > 0) {
+        const appointmentsList = todayAppts
+          .map((apt) => `${apt.patientName} - ${apt.time}`)
+          .join(", ");
+        toast.info(
+          `🗓️ Hôm nay bạn có ${todayAppts.length} lịch khám: ${appointmentsList}`,
+          5000,
+        );
+      }
+
       setLoading(false);
     });
-  }, []);
+  }, [toast]);
 
   const statusColor: Record<string, string> = {
     pending: "badge-amber",

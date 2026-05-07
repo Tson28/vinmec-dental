@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import ChatMessage, { type Message } from "../../components/chat/ChatMessage";
 import ConversationList from "../../components/chat/ConversationList";
-import { conversationApi, imageApi } from "../../services/api";
+import { conversationApi, imageApi, appointmentApi } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../hooks/useToast";
-import type { User } from "../../types";
+import type { User, Appointment } from "../../types";
 
 export default function DoctorChat() {
   const { user } = useAuth();
@@ -17,16 +17,48 @@ export default function DoctorChat() {
   >(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
+  // Check appointments on mount
+  useEffect(() => {
+    checkTodayAppointments();
+  }, [toast]);
+
+  const checkTodayAppointments = async () => {
+    try {
+      const res = await appointmentApi.getAll();
+      const appointments: Appointment[] = res.data?.data || [];
+      const today = new Date().toISOString().split("T")[0];
+
+      const todayAppointments = appointments.filter(
+        (apt) => apt.date === today,
+      );
+
+      if (todayAppointments.length > 0) {
+        const appointmentsList = todayAppointments
+          .map((apt) => `${apt.patientName} - ${apt.time}`)
+          .join(", ");
+        toast.info(
+          `🗓️ Hôm nay bạn có ${todayAppointments.length} lịch khám: ${appointmentsList}`,
+          5000,
+        );
+      }
+    } catch (error) {
+      console.error("Failed to check appointments:", error);
+    }
+  };
+
   const handleSelectConversation = async (
     conversationId: string,
     otherUser: User,
   ) => {
     setSelectedConversation(conversationId);
     setSelectedUser(otherUser);
-    await loadConversationMessages(conversationId);
+    await loadConversationMessages(conversationId, otherUser.name || "Patient");
   };
 
-  const loadConversationMessages = async (conversationId: string) => {
+  const loadConversationMessages = async (
+    conversationId: string,
+    senderName?: string,
+  ) => {
     try {
       setLoading(true);
       const res = await conversationApi.getById(conversationId);
@@ -52,6 +84,32 @@ export default function DoctorChat() {
       }));
 
       setMessages(formattedMessages);
+
+      // Check for new messages from other user
+      const hasNewMessages = rawMessages.some(
+        (msg: any) =>
+          msg.sender?._id?.toString() !== user?._id?.toString() &&
+          msg.sender?.toString() !== user?._id?.toString() &&
+          msg.sender !== user?._id,
+      );
+
+      if (hasNewMessages && senderName) {
+        const lastMessage = rawMessages[rawMessages.length - 1];
+        if (
+          lastMessage.sender?._id?.toString() !== user?._id?.toString() &&
+          lastMessage.sender?.toString() !== user?._id?.toString() &&
+          lastMessage.sender !== user?._id
+        ) {
+          const preview = lastMessage.content
+            ? lastMessage.content.substring(0, 50)
+            : lastMessage.type === "image"
+              ? "📸 Hình ảnh"
+              : lastMessage.type === "audio"
+                ? "🎙️ Tin nhắn thoại"
+                : "Tin nhắn";
+          toast.info(`💬 ${senderName}: ${preview}`);
+        }
+      }
     } catch (error) {
       console.error("Failed to load messages:", error);
       toast.error("Failed to load messages");

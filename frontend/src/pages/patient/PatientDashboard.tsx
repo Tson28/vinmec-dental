@@ -3,10 +3,12 @@ import DashboardLayout from "../../components/layout/DashboardLayout";
 import StatCard from "../../components/ui/StatCard";
 import { appointmentApi, recordApi, scoreApi } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../hooks/useToast";
 import type { Appointment, DentalScore } from "../../types";
 
 export default function PatientDashboard() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [stats, setStats] = useState({ appointments: 0, records: 0 });
   const [upcoming, setUpcoming] = useState<Appointment[]>([]);
   const [score, setScore] = useState<DentalScore | null>(null);
@@ -33,10 +35,24 @@ export default function PatientDashboard() {
           .filter((x) => x.status === "pending" || x.status === "confirmed")
           .slice(0, 3),
       );
+
+      // Check for today's appointments
+      const today = new Date().toISOString().split("T")[0];
+      const todayAppts = appts.filter((apt) => apt.date === today);
+      if (todayAppts.length > 0) {
+        const appointmentsList = todayAppts
+          .map((apt) => `${apt.doctorName} - ${apt.time}`)
+          .join(", ");
+        toast.info(
+          `🗓️ Hôm nay bạn có ${todayAppts.length} lịch khám: ${appointmentsList}`,
+          5000,
+        );
+      }
+
       if (s.status === "fulfilled")
         setScore(s.value.data?.data || s.value.data);
     });
-  }, []);
+  }, [toast]);
 
   const statusColor: Record<string, string> = {
     pending: "badge-amber",
