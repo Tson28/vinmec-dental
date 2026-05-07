@@ -8,7 +8,7 @@ export default function DevAuthPanel() {
     admin: {
       token: "dev-token-admin",
       user: {
-        id: "1",
+        _id: "1",
         email: "admin@vinamec.vn",
         name: "Admin User",
         role: "admin",
@@ -17,7 +17,7 @@ export default function DevAuthPanel() {
     doctor: {
       token: "dev-token-doctor",
       user: {
-        id: "2",
+        _id: "2",
         email: "doctor@vinamec.vn",
         name: "Doctor User",
         role: "doctor",
@@ -26,7 +26,7 @@ export default function DevAuthPanel() {
     patient: {
       token: "dev-token-patient",
       user: {
-        id: "3",
+        _id: "3",
         email: "patient@vinamec.vn",
         name: "Patient User",
         role: "patient",
