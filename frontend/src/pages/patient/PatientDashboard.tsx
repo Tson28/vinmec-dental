@@ -79,7 +79,7 @@ export default function PatientDashboard() {
     <DashboardLayout title="My Dashboard">
       <div className="space-y-6">
         {/* Welcome */}
-        <div className="card bg-gradient-dental text-white border-0 flex items-center justify-between">
+        <div className="card bg-gradient-dental text-green-400 border-0 flex items-center justify-between">
           <div>
             <p className="text-dental-100 text-sm">Welcome back,</p>
             <h2 className="font-display font-bold text-2xl mt-1">

@@ -48,12 +48,12 @@ export default function ChatInterface({
           🤖
         </div>
         <div>
-          <h3 className="font-bold text-dental-700 text-sm">
+          <h3 className="font-bold text-surface-900 text-sm">
             {title || "Dental AI Assistant"}
           </h3>
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse-slow"></div>
-            <span className="text-xs text-dental-600 font-medium">
+            <span className="text-xs text-surface-800 font-medium">
               Online • {isPublic ? "Public Mode" : "Private Mode"}
             </span>
           </div>
@@ -67,10 +67,10 @@ export default function ChatInterface({
             <div className="w-24 h-24 rounded-2xl bg-gradient-dental flex items-center justify-center text-white text-6xl mb-4 shadow-glow">
               🤖
             </div>
-            <p className="font-display font-bold text-lg text-dental-700">
+            <p className="font-display font-bold text-lg text-surface-900">
               Hi! I'm your Dental AI
             </p>
-            <p className="text-sm text-dental-500 mt-1 max-w-xs">
+            <p className="text-sm text-surface-800 mt-1 max-w-xs">
               Ask me anything about dental health, treatments, or appointments.
             </p>
             <div className="flex flex-wrap gap-2 mt-4 justify-center">
@@ -82,7 +82,7 @@ export default function ChatInterface({
                 <button
                   key={q}
                   onClick={() => onSend(q)}
-                  className="text-xs bg-dental-50 text-dental-600 px-3 py-1.5 rounded-full border border-dental-200 hover:bg-dental-100 transition"
+                  className="text-xs bg-dental-50 text-surface-900 px-3 py-1.5 rounded-full border border-dental-300 hover:bg-dental-100 transition"
                 >
                   {q}
                 </button>
@@ -109,7 +109,7 @@ export default function ChatInterface({
                 {msg.content}
               </div>
               <p
-                className={`text-[10px] text-dental-500 mt-1 ${msg.role === "user" ? "text-right" : ""}`}
+                className={`text-[10px] text-surface-600 mt-1 ${msg.role === "user" ? "text-right" : ""}`}
               >
                 {new Date(msg.timestamp).toLocaleTimeString([], {
                   hour: "2-digit",

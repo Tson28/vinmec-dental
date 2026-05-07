@@ -52,10 +52,8 @@ export default function PublicChatPage() {
             🤖
           </div>
           <div>
-            <p className="font-display font-bold text-dental-700 text-sm">
-              VinaMec
-            </p>
-            <p className="text-dental-600 text-xs">Public Dental AI</p>
+            <p className="font-display font-bold text-white text-sm">VinaMec</p>
+            <p className="text-white/70 text-xs">Public Dental AI</p>
           </div>
         </div>
         <div className="flex gap-3">
@@ -70,13 +68,13 @@ export default function PublicChatPage() {
 
       {/* Chat */}
       <div className="flex-1 max-w-3xl w-full mx-auto px-4 py-4 flex flex-col">
-        <div className="mb-4 px-4 py-3 bg-dental-50 backdrop-blur rounded-xl border border-dental-200 text-sm text-dental-700 flex items-center gap-2">
+        <div className="mb-4 px-4 py-3 bg-surface-900 backdrop-blur rounded-xl border border-surface-700 text-sm text-white flex items-center gap-2">
           <span>ℹ️</span>
           <span>
             Public chat – for personalized advice and full features, please{" "}
             <Link
               to="/login"
-              className="underline font-semibold text-dental-800"
+              className="underline font-semibold text-yellow-300"
             >
               login
             </Link>

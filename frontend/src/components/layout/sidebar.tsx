@@ -117,7 +117,7 @@ export default function Sidebar({ collapsed, onCollapse }: Props) {
       {!collapsed && (
         <div className="px-4 py-4 border-b border-surface-100">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-dental flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-gradient-dental flex items-center justify-center text-black-400 text-sm font-bold flex-shrink-0">
               {user?.name?.charAt(0) || "?"}
             </div>
             <div className="min-w-0">
@@ -153,7 +153,7 @@ export default function Sidebar({ collapsed, onCollapse }: Props) {
         ))}
         {!collapsed && (
           <NavLink to="/chat/public" className="sidebar-link">
-            <span className="text-base">💬</span>
+            <span className="text-base">🤖</span>
             <span>Public Chat</span>
           </NavLink>
         )}

@@ -75,7 +75,7 @@ export default function DoctorDashboard() {
   return (
     <DashboardLayout title="Doctor Dashboard">
       <div className="space-y-6">
-        <div className="card bg-gradient-dental text-white border-0">
+        <div className="card bg-gradient-dental text-blue-400 border-0">
           <p className="text-dental-100 text-sm">Good morning,</p>
           <h2 className="font-display font-bold text-2xl mt-1">
             Dr. {user?.name?.split(" ").pop()}
