@@ -111,7 +111,13 @@ const upload = async (req, res) => {
 
     // Determine subdirectory from stored path
     const relPath = req.file.path.replace(/\\/g, '/');
-    const subdir = relPath.includes('/xrays/') ? 'xrays' : relPath.includes('/scans/') ? 'scans' : 'images';
+    const subdir = relPath.includes('/xrays/')
+      ? 'xrays'
+      : relPath.includes('/scans/')
+        ? 'scans'
+        : relPath.includes('/audio/')
+          ? 'audio'
+          : 'images';
     const imageUrl = buildImageUrl(req, req.file.filename, subdir);
 
     const image = await ImageAnalysis.create({

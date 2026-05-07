@@ -152,7 +152,7 @@ export default function DoctorChat() {
     try {
       setLoading(true);
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("image", file);
 
       const res = await imageApi.upload(formData);
       const imageUrl = res.data?.data?.url || res.data?.url;
@@ -195,7 +195,7 @@ export default function DoctorChat() {
     try {
       setLoading(true);
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("image", file);
 
       const res = await imageApi.upload(formData);
       const audioUrl = res.data?.data?.url || res.data?.url;

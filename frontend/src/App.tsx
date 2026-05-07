@@ -1,8 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./routes/ProtectedRoute";
-import DevAuthPanel from "./components/DevAuthPanel";
-import { ToastProvider } from './context/ToastContext'
 
 // Pages
 import LoginPage from "./pages/LoginPage";
@@ -210,7 +208,6 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <AppRoutes />
-        <DevAuthPanel />
       </BrowserRouter>
     </AuthProvider>
   );

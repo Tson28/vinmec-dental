@@ -1,7 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import DashboardLayout from '../components/layout/DashboardLayout'
+import { useAuth } from '../context/AuthContext'
 
 export default function VideoCallPage() {
+  const { user } = useAuth()
+  const isDoctor = user?.role === 'doctor' || user?.role === 'admin'
+
+  // Labels based on role
+  const localLabel  = isDoctor ? '👨‍⚕️ Doctor (You)' : '👤 You'
+  const remoteLabel = isDoctor ? '👤 Patient'        : '👨‍⚕️ Doctor'
+  const localIcon   = isDoctor ? '👨‍⚕️' : '👤'
+  const remoteIcon  = isDoctor ? '👤' : '👨‍⚕️'
+
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
   const pcRef = useRef<RTCPeerConnection | null>(null)
@@ -134,8 +144,8 @@ export default function VideoCallPage() {
             <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-full object-cover" />
             {callState !== 'connected' && (
               <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
-                <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center text-4xl mb-3">👨‍⚕️</div>
-                <p className="font-semibold">Doctor</p>
+                <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center text-4xl mb-3">{remoteIcon}</div>
+                <p className="font-semibold">{isDoctor ? 'Patient' : 'Doctor'}</p>
                 <p className="text-white/60 text-sm mt-1">
                   {callState === 'idle' && 'Waiting to connect...'}
                   {callState === 'connecting' && 'Connecting...'}
@@ -151,7 +161,7 @@ export default function VideoCallPage() {
               </div>
             )}
             <div className="absolute top-3 left-3 px-2.5 py-1 bg-black/50 rounded-lg text-white text-xs font-semibold backdrop-blur-sm">
-              👨‍⚕️ Doctor
+              {remoteLabel}
             </div>
           </div>
 
@@ -160,8 +170,8 @@ export default function VideoCallPage() {
             <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover scale-x-[-1]" />
             {callState === 'idle' && (
               <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
-                <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center text-4xl mb-3">👤</div>
-                <p className="font-semibold">You</p>
+                <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center text-4xl mb-3">{localIcon}</div>
+                <p className="font-semibold">{isDoctor ? 'Doctor (You)' : 'You'}</p>
                 <p className="text-white/60 text-sm mt-1">Camera off</p>
               </div>
             )}
@@ -171,7 +181,7 @@ export default function VideoCallPage() {
               </div>
             )}
             <div className="absolute top-3 left-3 px-2.5 py-1 bg-black/50 rounded-lg text-white text-xs font-semibold backdrop-blur-sm">
-              👤 You
+              {localLabel}
             </div>
           </div>
         </div>

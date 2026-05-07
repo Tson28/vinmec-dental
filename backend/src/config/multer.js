@@ -13,6 +13,7 @@ const storage = multer.diskStorage({
     let subDir = 'images';
     if (['.dcm', '.dicom'].includes(ext)) subDir = 'xrays';
     else if (['.stl', '.obj', '.ply'].includes(ext)) subDir = 'scans';
+    else if (['.webm', '.ogg', '.mp3', '.wav', '.m4a', '.aac'].includes(ext)) subDir = 'audio';
 
     const uploadPath = path.join(process.env.UPLOAD_DIR || 'uploads', subDir);
     ensureDir(uploadPath);
@@ -28,8 +29,14 @@ const fileFilter = (req, file, cb) => {
   const allowed = [
     'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif',
     'application/dicom', 'application/octet-stream',
+    'audio/webm', 'audio/ogg', 'audio/mpeg', 'audio/mp3',
+    'audio/wav', 'audio/x-wav', 'audio/m4a', 'audio/aac',
   ];
-  const allowedExts = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.dcm', '.dicom', '.stl', '.obj'];
+  const allowedExts = [
+    '.jpg', '.jpeg', '.png', '.webp', '.gif',
+    '.dcm', '.dicom', '.stl', '.obj',
+    '.webm', '.ogg', '.mp3', '.wav', '.m4a', '.aac',
+  ];
   const ext = path.extname(file.originalname).toLowerCase();
 
   if (allowed.includes(file.mimetype) || allowedExts.includes(ext)) {

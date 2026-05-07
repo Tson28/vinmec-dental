@@ -140,7 +140,7 @@ export default function PatientDentalScore() {
     <DashboardLayout title="Dental Score">
       <div className="space-y-6">
         {/* Hero Score */}
-        <div className="card bg-gradient-dental text-white border-0 flex flex-col sm:flex-row items-center gap-6">
+        <div className="card bg-gradient-dental text-green border-0 flex flex-col sm:flex-row items-center gap-6">
           <div className="relative w-36 h-36 flex-shrink-0">
             <svg className="w-full h-full -rotate-90" viewBox="0 0 136 136">
               <circle cx="68" cy="68" r="56" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="12" />
@@ -154,8 +154,8 @@ export default function PatientDentalScore() {
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-4xl font-display font-bold text-white">{loading ? '—' : overall}</span>
-              <span className="text-dental-200 text-xs font-medium">/100</span>
+              <span className="text-4xl font-display font-bold text-green-600">{loading ? '—' : overall}</span>
+              <span className="text-green-600 text-xs font-bold">/100</span>
             </div>
           </div>
           <div>

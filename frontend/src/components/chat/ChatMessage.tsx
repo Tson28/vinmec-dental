@@ -210,11 +210,24 @@ export default function ChatMessage({
             <div
               className={`flex flex-col max-w-xs ${msg.isOwn ? "items-end" : "items-start"}`}
             >
-              <p
-                className={`text-xs font-medium ${msg.isOwn ? "text-right" : ""} text-black mb-1`}
+              <div
+                className={`flex items-center gap-1 mb-1 ${msg.isOwn ? "flex-row-reverse" : "flex-row"}`}
               >
-                {msg.sender.name}
-              </p>
+                <span
+                  className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                    msg.isOwn ? "bg-dental-500" : "bg-indigo-400"
+                  }`}
+                />
+                <p
+                  className={`text-xs font-bold tracking-wide ${
+                    msg.isOwn
+                      ? "text-dental-600"
+                      : "text-indigo-600"
+                  }`}
+                >
+                  {msg.sender.name}
+                </p>
+              </div>
 
               <div
                 className={`rounded-2xl px-4 py-2.5 ${msg.isOwn ? "bg-dental-600 text-black rounded-br-none" : "bg-surface-100 text-black rounded-bl-none"}`}
@@ -266,7 +279,7 @@ export default function ChatMessage({
         {loading && (
           <div className="flex gap-3">
             <div className="w-8 h-8 rounded-full bg-gradient-dental flex items-center justify-center text-white text-sm flex-shrink-0">
-              🤖
+              👨‍⚕️
             </div>
             <div className="bg-surface-100 rounded-2xl rounded-bl-none px-4 py-3 flex items-center gap-2">
               <div
@@ -379,8 +392,9 @@ export default function ChatMessage({
             }`}
             title="Hold to record voice message"
           >
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M8 16a6 6 0 100-12 6 6 0 000 12zM9 11a1 1 0 11-2 0 1 1 0 012 0z" />
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 1a4 4 0 00-4 4v6a4 4 0 008 0V5a4 4 0 00-4-4z" />
+              <path d="M19 11a1 1 0 10-2 0 5 5 0 01-10 0 1 1 0 10-2 0 7 7 0 006 6.93V20H9a1 1 0 000 2h6a1 1 0 000-2h-2v-2.07A7 7 0 0019 11z" />
             </svg>
           </button>
 
