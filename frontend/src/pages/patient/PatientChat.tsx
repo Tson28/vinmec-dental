@@ -2,10 +2,15 @@ import { useState, useEffect } from "react";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import ChatMessage, { type Message } from "../../components/chat/ChatMessage";
 import ConversationList from "../../components/chat/ConversationList";
-import { conversationApi, imageApi, appointmentApi } from "../../services/api";
+import {
+  conversationApi,
+  imageApi,
+  appointmentApi,
+  chatApi,
+} from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../hooks/useToast";
-import type { User, Appointment } from "../../types";
+import type { User, Appointment, ChatMessage as ChatMsg } from "../../types";
 
 export default function PatientChat() {
   const { user } = useAuth();
@@ -16,6 +21,8 @@ export default function PatientChat() {
     string | null
   >(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isChatbot, setIsChatbot] = useState(false);
+  const [chatbotHistory, setChatbotHistory] = useState<ChatMsg[]>([]);
 
   // Check appointments on mount
   useEffect(() => {
@@ -118,36 +125,118 @@ export default function PatientChat() {
     }
   };
 
+  const handleSelectChatbot = () => {
+    setSelectedConversation("chatbot");
+    setSelectedUser(null);
+    setIsChatbot(true);
+    setMessages([]);
+    setChatbotHistory([]);
+  };
+
   const handleSendText = async (content: string) => {
     if (!selectedConversation || !user) return;
 
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      sender: {
-        id: user._id || user.id || "unknown",
-        name: user.name || "You",
-        avatar: user.avatar,
-      },
-      type: "text",
-      content,
-      timestamp: new Date().toISOString(),
-      isOwn: true,
-    };
-    setMessages((prev) => [...prev, userMsg]);
-
-    try {
-      await conversationApi.sendMessage(selectedConversation, {
-        content,
+    if (isChatbot) {
+      // Handle chatbot conversation
+      const userMsg: Message = {
+        id: Date.now().toString(),
+        sender: {
+          id: user._id || user.id || "unknown",
+          name: user.name || "You",
+          avatar: user.avatar,
+        },
         type: "text",
-      });
-    } catch (error) {
-      console.error("Failed to send message:", error);
-      toast.error("Failed to send message");
+        content,
+        timestamp: new Date().toISOString(),
+        isOwn: true,
+      };
+      setMessages((prev) => [...prev, userMsg]);
+
+      const newHistory: ChatMsg[] = [
+        ...chatbotHistory,
+        {
+          id: Date.now().toString(),
+          role: "user",
+          content,
+          timestamp: new Date().toISOString(),
+        },
+      ];
+      setChatbotHistory(newHistory);
+
+      try {
+        setLoading(true);
+        const res = await chatApi.privateChat(
+          content,
+          newHistory.map((h) => ({ role: h.role, content: h.content })),
+        );
+        const aiResponse =
+          res.data?.reply ||
+          "Xin lỗi, tôi không thể trả lời câu hỏi này. Vui lòng thử lại.";
+
+        const aiMsg: Message = {
+          id: (Date.now() + 1).toString(),
+          sender: {
+            id: "ai-assistant",
+            name: "AI Assistant",
+            avatar: undefined,
+          },
+          type: "text",
+          content: aiResponse,
+          timestamp: new Date().toISOString(),
+          isOwn: false,
+        };
+        setMessages((prev) => [...prev, aiMsg]);
+
+        setChatbotHistory([
+          ...newHistory,
+          {
+            id: (Date.now() + 1).toString(),
+            role: "assistant",
+            content: aiResponse,
+            timestamp: new Date().toISOString(),
+          },
+        ]);
+      } catch (error) {
+        console.error("Failed to chat with AI:", error);
+        toast.error("Lỗi giao tiếp với AI. Vui lòng thử lại.");
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      // Handle doctor conversation
+      const userMsg: Message = {
+        id: Date.now().toString(),
+        sender: {
+          id: user._id || user.id || "unknown",
+          name: user.name || "You",
+          avatar: user.avatar,
+        },
+        type: "text",
+        content,
+        timestamp: new Date().toISOString(),
+        isOwn: true,
+      };
+      setMessages((prev) => [...prev, userMsg]);
+
+      try {
+        await conversationApi.sendMessage(selectedConversation, {
+          content,
+          type: "text",
+        });
+      } catch (error) {
+        console.error("Failed to send message:", error);
+        toast.error("Failed to send message");
+      }
     }
   };
 
   const handleSendImage = async (file: File) => {
     if (!selectedConversation || !user) return;
+
+    if (isChatbot) {
+      toast.info("Gửi hình ảnh không hỗ trợ cho AI chatbot");
+      return;
+    }
 
     try {
       setLoading(true);
@@ -192,10 +281,15 @@ export default function PatientChat() {
   const handleSendAudio = async (file: File) => {
     if (!selectedConversation || !user) return;
 
+    if (isChatbot) {
+      toast.info("Gửi tin nhắn thoại không hỗ trợ cho AI chatbot");
+      return;
+    }
+
     try {
       setLoading(true);
       const formData = new FormData();
-      formData.append("image", file);
+      formData.append("audio", file);
 
       const res = await imageApi.upload(formData);
       const audioUrl = res.data?.data?.url || res.data?.url;
@@ -240,13 +334,25 @@ export default function PatientChat() {
         <div className="w-80 flex-shrink-0">
           <ConversationList
             onSelectConversation={handleSelectConversation}
+            onSelectChatbot={handleSelectChatbot}
             loading={loading}
+            isChatbotSelected={isChatbot}
           />
         </div>
 
         {/* Chat Area */}
         <div className="flex-1 min-w-0">
-          {selectedConversation && selectedUser ? (
+          {isChatbot ? (
+            <ChatMessage
+              messages={messages}
+              onSendText={handleSendText}
+              onSendImage={handleSendImage}
+              onSendAudio={handleSendAudio}
+              loading={loading}
+              title="Trợ lý Nha khoa AI"
+              placeholder="Hỏi tôi về sức khỏe răng của bạn..."
+            />
+          ) : selectedConversation && selectedUser ? (
             <ChatMessage
               messages={messages}
               onSendText={handleSendText}
@@ -263,7 +369,7 @@ export default function PatientChat() {
                 Select a conversation
               </p>
               <p className="text-sm text-surface-400">
-                Choose a doctor from the list to start chatting
+                Choose a doctor from the list or chat with AI assistant
               </p>
             </div>
           )}

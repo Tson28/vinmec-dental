@@ -151,12 +151,6 @@ export default function Sidebar({ collapsed, onCollapse }: Props) {
             {!collapsed && <span>{item.label}</span>}
           </NavLink>
         ))}
-        {!collapsed && (
-          <NavLink to="/chat/public" className="sidebar-link">
-            <span className="text-base">🤖</span>
-            <span>Public Chat</span>
-          </NavLink>
-        )}
       </nav>
 
       {/* Logout */}

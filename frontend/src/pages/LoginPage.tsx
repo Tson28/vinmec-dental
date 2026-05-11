@@ -122,12 +122,6 @@ export default function LoginPage() {
                 Register
               </Link>
             </p>
-            <Link
-              to="/chat/public"
-              className="text-xs text-surface-400 hover:text-dental-500 transition block"
-            >
-              💬 Try Public Chatbot without login
-            </Link>
           </div>
 
           {/* Demo Credentials */}

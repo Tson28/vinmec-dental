@@ -17,12 +17,16 @@ interface Conversation {
 
 interface Props {
   onSelectConversation: (conversationId: string, otherUser: User) => void;
+  onSelectChatbot?: () => void;
   loading?: boolean;
+  isChatbotSelected?: boolean;
 }
 
 export default function ConversationList({
   onSelectConversation,
+  onSelectChatbot,
   loading,
+  isChatbotSelected,
 }: Props) {
   const { toast } = useToast();
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -99,13 +103,25 @@ export default function ConversationList({
       {/* Header */}
       <div className="px-4 py-3 border-b border-surface-100 bg-gradient-to-r from-dental-50 to-mint-50">
         <h3 className="font-bold text-surface-900 mb-3">Messages</h3>
-        <button
-          onClick={loadAvailableUsers}
-          className="w-full btn-primary text-sm py-2"
-          disabled={loadingUsers}
-        >
-          {loadingUsers ? "Loading..." : "+ New Chat"}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={onSelectChatbot}
+            className={`flex-1 text-sm py-2 px-3 rounded-lg transition font-medium ${
+              isChatbotSelected
+                ? "bg-gradient-dental text-white shadow-md"
+                : "btn-secondary"
+            }`}
+          >
+            🤖 AI Chat
+          </button>
+          <button
+            onClick={loadAvailableUsers}
+            className="flex-1 btn-primary text-sm py-2"
+            disabled={loadingUsers}
+          >
+            {loadingUsers ? "Loading..." : "+ New Chat"}
+          </button>
+        </div>
       </div>
 
       {/* New Chat Modal */}
