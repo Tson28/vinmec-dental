@@ -1,11 +1,11 @@
-'use strict';
+"use strict";
 
-const MedicalRecord = require('../models/MedicalRecord');
-const User = require('../models/User');
-const { sendSuccess, sendError, sendPaginated } = require('../utils/response');
-const { getPagination, buildSort } = require('../utils/pagination');
+const MedicalRecord = require("../models/MedicalRecord");
+const User = require("../models/User");
+const { sendSuccess, sendError, sendPaginated } = require("../utils/response");
+const { getPagination, buildSort } = require("../utils/pagination");
 
-const ALLOWED_SORT = ['date', 'createdAt', 'diagnosis'];
+const ALLOWED_SORT = ["date", "createdAt", "diagnosis"];
 
 // GET /api/records  [admin, doctor]
 const getAll = async (req, res) => {
@@ -14,21 +14,21 @@ const getAll = async (req, res) => {
     const sort = buildSort(req.query, ALLOWED_SORT);
     const filter = {};
 
-    if (req.user.role === 'doctor') filter.doctor = req.user._id;
+    if (req.user.role === "doctor") filter.doctor = req.user._id;
     if (req.query.patientId) filter.patient = req.query.patientId;
     if (req.query.search) {
       filter.$or = [
-        { diagnosis: { $regex: req.query.search, $options: 'i' } },
-        { patientName: { $regex: req.query.search, $options: 'i' } },
-        { treatment: { $regex: req.query.search, $options: 'i' } },
+        { diagnosis: { $regex: req.query.search, $options: "i" } },
+        { patientName: { $regex: req.query.search, $options: "i" } },
+        { treatment: { $regex: req.query.search, $options: "i" } },
       ];
     }
 
     const [records, total] = await Promise.all([
       MedicalRecord.find(filter)
-        .populate('patient', 'name email phone')
-        .populate('doctor', 'name email specialization')
-        .populate('appointment', 'date time serviceName')
+        .populate("patient", "name email phone")
+        .populate("doctor", "name email specialization")
+        .populate("appointment", "date time serviceName")
         .sort(sort)
         .skip(skip)
         .limit(limit),
@@ -48,8 +48,8 @@ const getMine = async (req, res) => {
 
     const [records, total] = await Promise.all([
       MedicalRecord.find({ patient: req.user._id })
-        .populate('doctor', 'name email specialization')
-        .populate('appointment', 'date time serviceName')
+        .populate("doctor", "name email specialization")
+        .populate("appointment", "date time serviceName")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit),
@@ -66,20 +66,20 @@ const getMine = async (req, res) => {
 const getById = async (req, res) => {
   try {
     const record = await MedicalRecord.findById(req.params.id)
-      .populate('patient', 'name email phone')
-      .populate('doctor', 'name email specialization')
-      .populate('appointment', 'date time serviceName');
+      .populate("patient", "name email phone")
+      .populate("doctor", "name email specialization")
+      .populate("appointment", "date time serviceName");
 
-    if (!record) return sendError(res, 404, 'Medical record not found.');
+    if (!record) return sendError(res, 404, "Medical record not found.");
 
     if (
-      req.user.role === 'patient' &&
+      req.user.role === "patient" &&
       record.patient._id.toString() !== req.user._id.toString()
     ) {
-      return sendError(res, 403, 'Access denied. This is not your record.');
+      return sendError(res, 403, "Access denied. This is not your record.");
     }
 
-    return sendSuccess(res, 200, 'Medical record retrieved', record);
+    return sendSuccess(res, 200, "Medical record retrieved", record);
   } catch (err) {
     return sendError(res, 500, err.message);
   }
@@ -89,34 +89,62 @@ const getById = async (req, res) => {
 const create = async (req, res) => {
   try {
     const {
-      patientId, appointmentId, date, chiefComplaint,
-      diagnosis, treatment, prescription, notes,
-      teeth, vitalSigns, followUpDate,
+      patientId,
+      appointmentId,
+      date,
+      chiefComplaint,
+      diagnosis,
+      treatment,
+      prescription,
+      notes,
+      teeth,
+      vitalSigns,
+      followUpDate,
     } = req.body;
 
-    // Validate patient
-    const patient = await User.findById(patientId);
-    if (!patient || patient.role !== 'patient') {
-      return sendError(res, 404, 'Patient not found.');
+    // Validate patient - try as Patient ID first, then as User ID
+    const Patient = require("../models/Patient");
+    let patientRecord = await Patient.findById(patientId);
+    let userId = patientId;
+    let patientName = "";
+
+    if (patientRecord) {
+      // patientId is a Patient ID
+      userId = patientRecord.user.toString();
+      patientName = patientRecord.name;
+    } else {
+      // patientId might be a User ID - verify it's a patient
+      const user = await User.findById(patientId);
+      if (!user || user.role !== "patient") {
+        return sendError(res, 404, "Patient not found.");
+      }
+      patientName = user.name;
+      userId = patientId;
     }
 
     const record = await MedicalRecord.create({
-      patient: patientId,
-      patientName: patient.name,
+      patient: userId,
+      patientName,
       doctor: req.user._id,
       doctorName: req.user.name,
       appointment: appointmentId || undefined,
-      date: date || new Date().toISOString().split('T')[0],
-      chiefComplaint, diagnosis, treatment, prescription,
-      notes, teeth, vitalSigns, followUpDate,
+      date: date || new Date().toISOString().split("T")[0],
+      chiefComplaint,
+      diagnosis,
+      treatment,
+      prescription,
+      notes,
+      teeth,
+      vitalSigns,
+      followUpDate,
     });
 
     await record.populate([
-      { path: 'patient', select: 'name email' },
-      { path: 'doctor', select: 'name email specialization' },
+      { path: "patient", select: "name email" },
+      { path: "doctor", select: "name email specialization" },
     ]);
 
-    return sendSuccess(res, 201, 'Medical record created', record);
+    return sendSuccess(res, 201, "Medical record created", record);
   } catch (err) {
     return sendError(res, 500, err.message);
   }
@@ -126,25 +154,36 @@ const create = async (req, res) => {
 const update = async (req, res) => {
   try {
     const record = await MedicalRecord.findById(req.params.id);
-    if (!record) return sendError(res, 404, 'Medical record not found.');
+    if (!record) return sendError(res, 404, "Medical record not found.");
 
     if (
-      req.user.role === 'doctor' &&
+      req.user.role === "doctor" &&
       record.doctor.toString() !== req.user._id.toString()
     ) {
-      return sendError(res, 403, 'Access denied. You can only edit your own records.');
+      return sendError(
+        res,
+        403,
+        "Access denied. You can only edit your own records.",
+      );
     }
 
     const allowed = [
-      'chiefComplaint', 'diagnosis', 'treatment', 'prescription',
-      'notes', 'teeth', 'vitalSigns', 'followUpDate', 'attachments',
+      "chiefComplaint",
+      "diagnosis",
+      "treatment",
+      "prescription",
+      "notes",
+      "teeth",
+      "vitalSigns",
+      "followUpDate",
+      "attachments",
     ];
-    allowed.forEach(field => {
+    allowed.forEach((field) => {
       if (req.body[field] !== undefined) record[field] = req.body[field];
     });
 
     await record.save();
-    return sendSuccess(res, 200, 'Medical record updated', record);
+    return sendSuccess(res, 200, "Medical record updated", record);
   } catch (err) {
     return sendError(res, 500, err.message);
   }
@@ -154,8 +193,8 @@ const update = async (req, res) => {
 const remove = async (req, res) => {
   try {
     const record = await MedicalRecord.findByIdAndDelete(req.params.id);
-    if (!record) return sendError(res, 404, 'Medical record not found.');
-    return sendSuccess(res, 200, 'Medical record deleted');
+    if (!record) return sendError(res, 404, "Medical record not found.");
+    return sendSuccess(res, 200, "Medical record deleted");
   } catch (err) {
     return sendError(res, 500, err.message);
   }

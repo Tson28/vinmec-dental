@@ -142,12 +142,27 @@ const upload = async (req, res) => {
           400,
           "patientId is required when uploading for a patient.",
         );
-      const patient = await User.findById(patientId);
-      if (!patient || patient.role !== "patient") {
-        return sendError(res, 404, "Patient not found.");
+
+      // Try as Patient ID first, then as User ID
+      const Patient = require("../models/Patient");
+      let patientRecord = await Patient.findById(patientId);
+      let userId = patientId;
+
+      if (patientRecord) {
+        // patientId is a Patient ID
+        userId = patientRecord.user.toString();
+        patientName = patientRecord.name;
+      } else {
+        // patientId might be a User ID - verify it's a patient
+        const user = await User.findById(patientId);
+        if (!user || user.role !== "patient") {
+          return sendError(res, 404, "Patient not found.");
+        }
+        patientName = user.name;
+        userId = patientId;
       }
-      patientUserId = patient._id;
-      patientName = patient.name;
+
+      patientUserId = userId;
     }
 
     // Determine subdirectory from stored path
