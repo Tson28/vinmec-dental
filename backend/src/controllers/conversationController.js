@@ -5,6 +5,21 @@ const User = require("../models/User");
 const { sendSuccess, sendError, sendPaginated } = require("../utils/response");
 const { getPagination } = require("../utils/pagination");
 
+// Helper to fix old media URLs
+const normalizeMediaUrls = (messages = []) => {
+  return messages.map((msg) => {
+    if (msg.audioUrl && !msg.audioUrl.includes("/uploads/")) {
+      const filename = msg.audioUrl.split("/").pop();
+      msg.audioUrl = `/uploads/audio/${filename}`;
+    }
+    if (msg.imageUrl && !msg.imageUrl.includes("/uploads/")) {
+      const filename = msg.imageUrl.split("/").pop();
+      msg.imageUrl = `/uploads/images/${filename}`;
+    }
+    return msg;
+  });
+};
+
 // GET /api/conversations - Get all conversations for current user
 const getConversations = async (req, res) => {
   try {
@@ -77,7 +92,7 @@ const getConversation = async (req, res) => {
       id: conversation._id,
       conversationId: conversation._id,
       otherUser: otherParticipant,
-      messages: messages.reverse(),
+      messages: normalizeMediaUrls(messages.reverse()),
       totalMessages: conversation.messages.length,
     });
   } catch (err) {

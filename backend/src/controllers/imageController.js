@@ -15,7 +15,20 @@ const buildImageUrl = (req, filename, subdir) => {
   const host = req.get("host");
   return `${protocol}://${host}/uploads/${subdir}/${filename}`;
 };
-
+// Helper to fix old media URLs
+const normalizeMediaUrls = (messages = []) => {
+  return messages.map((msg) => {
+    if (msg.audioUrl && !msg.audioUrl.includes("/uploads/")) {
+      const filename = msg.audioUrl.split("/").pop();
+      msg.audioUrl = `/uploads/audio/${filename}`;
+    }
+    if (msg.imageUrl && !msg.imageUrl.includes("/uploads/")) {
+      const filename = msg.imageUrl.split("/").pop();
+      msg.imageUrl = `/uploads/images/${filename}`;
+    }
+    return msg;
+  });
+};
 // GET /api/images  [admin, doctor]
 const getAll = async (req, res) => {
   try {

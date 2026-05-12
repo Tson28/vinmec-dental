@@ -220,9 +220,7 @@ export default function ChatMessage({
                 />
                 <p
                   className={`text-xs font-bold tracking-wide ${
-                    msg.isOwn
-                      ? "text-dental-600"
-                      : "text-indigo-600"
+                    msg.isOwn ? "text-dental-600" : "text-indigo-600"
                   }`}
                 >
                   {msg.sender.name}
@@ -238,11 +236,22 @@ export default function ChatMessage({
 
                 {msg.type === "image" && (
                   <div className="max-w-xs">
-                    <img
-                      src={msg.imageUrl}
-                      alt="Shared image"
-                      className="rounded-lg max-w-full h-auto"
-                    />
+                    {msg.imageUrl ? (
+                      <img
+                        src={msg.imageUrl}
+                        alt="Shared image"
+                        className="rounded-lg max-w-full h-auto"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).alt =
+                            "Image failed to load";
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    ) : (
+                      <div className="bg-surface-100 rounded-lg p-4 text-center text-sm text-red-500">
+                        Image not available
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -259,7 +268,20 @@ export default function ChatMessage({
                         <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
                       </svg>
                     </div>
-                    <audio controls className="flex-1 h-6" src={msg.audioUrl} />
+                    {msg.audioUrl ? (
+                      <audio
+                        controls
+                        className="flex-1 h-6"
+                        src={msg.audioUrl}
+                        onError={() =>
+                          console.error("Audio load failed:", msg.audioUrl)
+                        }
+                      />
+                    ) : (
+                      <span className="text-xs text-red-500">
+                        File not available
+                      </span>
+                    )}
                   </div>
                 )}
               </div>

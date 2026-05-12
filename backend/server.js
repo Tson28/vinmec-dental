@@ -65,6 +65,23 @@ const uploadDir = path.join(
   process.env.UPLOAD_DIR || "uploads",
 );
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+// Redirect old image URLs that are actually audio
+app.get("/uploads/images/:filename", (req, res) => {
+  const { filename } = req.params;
+  const imagePath = path.join(uploadDir, "images", filename);
+  const audioPath = path.join(uploadDir, "audio", filename);
+
+  if (fs.existsSync(imagePath)) {
+    res.sendFile(imagePath);
+  } else if (fs.existsSync(audioPath)) {
+    // File is actually in audio folder, redirect
+    res.redirect(`/uploads/audio/${filename}`);
+  } else {
+    res.status(404).json({ error: "File not found" });
+  }
+});
+
 app.use("/uploads", express.static(uploadDir));
 
 // ─── Swagger Docs (dev only) ─────────────────────────────────────────────────
