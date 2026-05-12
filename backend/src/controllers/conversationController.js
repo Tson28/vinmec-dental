@@ -8,13 +8,27 @@ const { getPagination } = require("../utils/pagination");
 // Helper to fix old media URLs
 const normalizeMediaUrls = (messages = []) => {
   return messages.map((msg) => {
-    if (msg.audioUrl && !msg.audioUrl.includes("/uploads/")) {
-      const filename = msg.audioUrl.split("/").pop();
-      msg.audioUrl = `/uploads/audio/${filename}`;
+    if (msg.audioUrl) {
+      // Convert full URL to relative path if needed
+      const match = msg.audioUrl.match(/\/uploads\/[^\s?#]*/);
+      msg.audioUrl = match ? match[0] : msg.audioUrl;
+
+      // Ensure it includes the /uploads/ prefix
+      if (!msg.audioUrl.includes("/uploads/")) {
+        const filename = msg.audioUrl.split("/").pop();
+        msg.audioUrl = `/uploads/audio/${filename}`;
+      }
     }
-    if (msg.imageUrl && !msg.imageUrl.includes("/uploads/")) {
-      const filename = msg.imageUrl.split("/").pop();
-      msg.imageUrl = `/uploads/images/${filename}`;
+    if (msg.imageUrl) {
+      // Convert full URL to relative path if needed
+      const match = msg.imageUrl.match(/\/uploads\/[^\s?#]*/);
+      msg.imageUrl = match ? match[0] : msg.imageUrl;
+
+      // Ensure it includes the /uploads/ prefix
+      if (!msg.imageUrl.includes("/uploads/")) {
+        const filename = msg.imageUrl.split("/").pop();
+        msg.imageUrl = `/uploads/images/${filename}`;
+      }
     }
     return msg;
   });
@@ -88,11 +102,14 @@ const getConversation = async (req, res) => {
       (p) => p._id.toString() !== userId.toString(),
     );
 
+    // Normalize media URLs before sending
+    const normalizedMessages = normalizeMediaUrls(messages);
+
     return sendSuccess(res, 200, "Conversation retrieved", {
       id: conversation._id,
       conversationId: conversation._id,
       otherUser: otherParticipant,
-      messages: normalizeMediaUrls(messages.reverse()),
+      messages: normalizedMessages.reverse(),
       totalMessages: conversation.messages.length,
     });
   } catch (err) {
@@ -125,12 +142,19 @@ const sendMessage = async (req, res) => {
     }
 
     // Add message
+    // Normalize URLs: Convert full URL to relative path
+    const normalizeUrl = (url) => {
+      if (!url) return url;
+      const match = url.match(/\/uploads\/[^\s?#]*/);
+      return match ? match[0] : url;
+    };
+
     const newMessage = {
       sender: userId,
       content: content || (type === "image" ? "Image" : "Audio"),
       type,
-      imageUrl,
-      audioUrl,
+      imageUrl: normalizeUrl(imageUrl),
+      audioUrl: normalizeUrl(audioUrl),
     };
 
     conversation.messages.push(newMessage);

@@ -59,12 +59,9 @@ app.use(sanitize);
 app.use(requestLogger);
 
 // ─── Static Uploads ───────────────────────────────────────────────────────────
-const uploadDir = path.join(
-  __dirname,
-  "..",
-  process.env.UPLOAD_DIR || "uploads",
-);
+const uploadDir = path.join(__dirname, process.env.UPLOAD_DIR || "uploads");
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+console.log(`   Upload dir: ${uploadDir}`);
 
 // Redirect old image URLs that are actually audio
 app.get("/uploads/images/:filename", (req, res) => {
@@ -79,6 +76,22 @@ app.get("/uploads/images/:filename", (req, res) => {
     res.redirect(`/uploads/audio/${filename}`);
   } else {
     res.status(404).json({ error: "File not found" });
+  }
+});
+
+// Debug handler for audio files
+app.get("/uploads/audio/:filename", (req, res) => {
+  const { filename } = req.params;
+  const audioPath = path.join(uploadDir, "audio", filename);
+
+  console.log(`[DEBUG] Audio request: ${filename}`);
+  console.log(`[DEBUG] Full path: ${audioPath}`);
+  console.log(`[DEBUG] Exists: ${fs.existsSync(audioPath)}`);
+
+  if (fs.existsSync(audioPath)) {
+    res.sendFile(audioPath);
+  } else {
+    res.status(404).json({ error: "Audio file not found", path: audioPath });
   }
 });
 

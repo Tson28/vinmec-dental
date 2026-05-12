@@ -18,13 +18,27 @@ const buildImageUrl = (req, filename, subdir) => {
 // Helper to fix old media URLs
 const normalizeMediaUrls = (messages = []) => {
   return messages.map((msg) => {
-    if (msg.audioUrl && !msg.audioUrl.includes("/uploads/")) {
-      const filename = msg.audioUrl.split("/").pop();
-      msg.audioUrl = `/uploads/audio/${filename}`;
+    if (msg.audioUrl) {
+      // Convert full URL to relative path if needed
+      const match = msg.audioUrl.match(/\/uploads\/[^\s?#]*/);
+      msg.audioUrl = match ? match[0] : msg.audioUrl;
+
+      // Ensure it includes the /uploads/ prefix
+      if (!msg.audioUrl.includes("/uploads/")) {
+        const filename = msg.audioUrl.split("/").pop();
+        msg.audioUrl = `/uploads/audio/${filename}`;
+      }
     }
-    if (msg.imageUrl && !msg.imageUrl.includes("/uploads/")) {
-      const filename = msg.imageUrl.split("/").pop();
-      msg.imageUrl = `/uploads/images/${filename}`;
+    if (msg.imageUrl) {
+      // Convert full URL to relative path if needed
+      const match = msg.imageUrl.match(/\/uploads\/[^\s?#]*/);
+      msg.imageUrl = match ? match[0] : msg.imageUrl;
+
+      // Ensure it includes the /uploads/ prefix
+      if (!msg.imageUrl.includes("/uploads/")) {
+        const filename = msg.imageUrl.split("/").pop();
+        msg.imageUrl = `/uploads/images/${filename}`;
+      }
     }
     return msg;
   });
@@ -146,6 +160,13 @@ const upload = async (req, res) => {
           ? "audio"
           : "images";
     const imageUrl = buildImageUrl(req, req_file.filename, subdir);
+
+    console.log(`[UPLOAD] File uploaded:
+      Filename: ${req_file.filename}
+      Path: ${req_file.path}
+      Subdir: ${subdir}
+      URL: ${imageUrl}
+    `);
 
     const image = await ImageAnalysis.create({
       patient: patientUserId,
