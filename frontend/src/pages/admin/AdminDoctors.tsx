@@ -1,5 +1,5 @@
 import { useState } from "react";
-import DashboardLayout from "../../components/layout/DashboardLayout";
+import AdminSidebar from "../../components/layout/AdminSidebar";
 import Table from "../../components/ui/Table";
 import Modal from "../../components/ui/Modal";
 import { doctorApi } from "../../services/api";
@@ -25,52 +25,66 @@ export default function AdminDoctors() {
   const columns = [
     {
       key: "name",
-      header: "Doctor",
+      header: "DOCTOR",
       render: (d: User) => (
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-dental-400 to-mint-500 flex items-center justify-center text-white text-xs font-bold">
-            {d.name?.charAt(0)}
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs font-bold">
+            {d.name?.charAt(0).toUpperCase()}
           </div>
           <div>
-            <p className="font-medium text-surface-800">{d.name}</p>
-            <p className="text-xs text-surface-400">{d.email}</p>
+            <p className="font-medium text-gray-900">{d.name}</p>
+            <p className="text-xs text-gray-500">{d.email}</p>
           </div>
         </div>
       ),
     },
     {
       key: "specialization",
-      header: "Specialization",
-      render: (d: User) => d.specialization || "General Dentistry",
+      header: "SPECIALIZATION",
+      render: (d: User) => (
+        <span className="text-gray-700">
+          {d.specialization || "General Dentistry"}
+        </span>
+      ),
     },
-    { key: "phone", header: "Phone", render: (d: User) => d.phone || "—" },
+    {
+      key: "phone",
+      header: "PHONE",
+      render: (d: User) => (
+        <span className="text-gray-700">{d.phone || "—"}</span>
+      ),
+    },
     {
       key: "status",
-      header: "Status",
-      render: () => <span className="badge-green badge">Active</span>,
+      header: "STATUS",
+      render: () => (
+        <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold">
+          Active
+        </span>
+      ),
     },
     {
       key: "actions",
-      header: "Actions",
+      header: "ACTIONS",
       render: (d: User) => (
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <button
             onClick={() => {
               setSelected(d);
               setShowModal(true);
             }}
-            className="text-xs text-dental-600 font-medium hover:text-dental-700"
+            className="text-blue-600 hover:text-blue-800 font-medium text-sm"
           >
             Edit
           </button>
           <button
             onClick={async () => {
-              if (confirm("Delete?")) {
+              if (confirm("Xóa bác sĩ này?")) {
                 await doctorApi.delete(d._id);
                 refetch();
               }
             }}
-            className="text-xs text-red-500 font-medium hover:text-red-700"
+            className="text-red-600 hover:text-red-800 font-medium text-sm"
           >
             Delete
           </button>
@@ -80,38 +94,57 @@ export default function AdminDoctors() {
   ];
 
   return (
-    <DashboardLayout title="Doctor Management">
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="font-display font-bold text-xl text-surface-900">
-              Medical Staff
-            </h2>
-            <p className="text-sm text-surface-500">
-              {filtered.length} doctors on record
-            </p>
+    <div className="flex h-screen bg-gray-50">
+      <AdminSidebar />
+      <div className="flex-1 ml-64 overflow-y-auto">
+        {/* Header */}
+        <div className="bg-white border-b border-gray-200 p-6 sticky top-0 z-10">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Quản lý Bác sĩ
+              </h1>
+              <p className="text-gray-600 text-sm">Wednesday, May 13, 2026</p>
+            </div>
+            <button
+              onClick={() => {
+                setSelected(null);
+                setShowModal(true);
+              }}
+              className="bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
+            >
+              + Add Doctor
+            </button>
           </div>
-          <button
-            onClick={() => {
-              setSelected(null);
-              setShowModal(true);
-            }}
-            className="btn-primary"
-          >
-            + Add Doctor
-          </button>
         </div>
 
-        <div className="card">
-          <div className="mb-4">
-            <input
-              className="input max-w-xs"
-              placeholder="Search doctors..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+        {/* Main Content */}
+        <div className="p-6">
+          <div className="bg-white rounded-lg shadow">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">
+                    Medical Staff
+                  </h2>
+                  <p className="text-sm text-gray-600">
+                    {filtered.length} doctors on record
+                  </p>
+                </div>
+              </div>
+
+              <input
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:border-blue-500"
+                placeholder="Search doctors..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+
+            <div className="overflow-x-auto">
+              <Table columns={columns} data={filtered} loading={loading} />
+            </div>
           </div>
-          <Table columns={columns} data={filtered} loading={loading} />
         </div>
       </div>
 
@@ -128,7 +161,7 @@ export default function AdminDoctors() {
           }}
         />
       </Modal>
-    </DashboardLayout>
+    </div>
   );
 }
 

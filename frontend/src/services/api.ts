@@ -148,3 +148,18 @@ export const conversationApi = {
   sendMessage: (conversationId: string, data: object) =>
     api.post(`/conversations/${conversationId}/messages`, data),
 };
+
+// ─── Admin ───────────────────────────────────────────────────────────────────
+export const adminApi = {
+  getDashboard: () => api.get("/admin/dashboard"),
+  getUserStats: () => api.get("/admin/users/stats"),
+  getAppointmentStats: (from?: string, to?: string) => {
+    const params = new URLSearchParams();
+    if (from) params.append("from", from);
+    if (to) params.append("to", to);
+    return api.get(`/admin/appointments/stats?${params}`);
+  },
+  getRecentActivity: (limit?: number) =>
+    api.get(`/admin/activity${limit ? `?limit=${limit}` : ""}`),
+  getSystemInfo: () => api.get("/admin/system"),
+};

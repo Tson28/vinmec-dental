@@ -1,5 +1,5 @@
 import { useState } from "react";
-import DashboardLayout from "../../components/layout/DashboardLayout";
+import AdminSidebar from "../../components/layout/AdminSidebar";
 import Table from "../../components/ui/Table";
 import Modal from "../../components/ui/Modal";
 import { serviceApi } from "../../services/api";
@@ -18,39 +18,45 @@ export default function AdminServices() {
   const columns = [
     {
       key: "name",
-      header: "Service",
+      header: "SERVICE",
       render: (s: Service) => (
-        <span className="font-semibold text-surface-800">{s.name}</span>
+        <span className="font-semibold text-gray-900">{s.name}</span>
       ),
     },
     {
       key: "category",
-      header: "Category",
+      header: "CATEGORY",
       render: (s: Service) => (
-        <span className="badge badge-blue">{s.category || "General"}</span>
+        <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">
+          {s.category || "General"}
+        </span>
       ),
     },
     {
       key: "duration",
-      header: "Duration",
-      render: (s: Service) => `${s.duration || 30} min`,
+      header: "DURATION",
+      render: (s: Service) => (
+        <span className="text-gray-700">{s.duration || 30} min</span>
+      ),
     },
     {
       key: "price",
-      header: "Price",
+      header: "PRICE",
       render: (s: Service) => (
-        <span className="font-mono font-semibold text-dental-700">
+        <span className="font-mono font-semibold text-gray-900">
           {Number(s.price || 0).toLocaleString("vi-VN")} ₫
         </span>
       ),
     },
     {
       key: "active",
-      header: "Status",
+      header: "STATUS",
       render: (s: Service) => (
         <span
           className={
-            s.active !== false ? "badge-green badge" : "badge-red badge"
+            s.active !== false
+              ? "px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold"
+              : "px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold"
           }
         >
           {s.active !== false ? "Active" : "Inactive"}
@@ -59,26 +65,26 @@ export default function AdminServices() {
     },
     {
       key: "actions",
-      header: "Actions",
+      header: "ACTIONS",
       render: (s: Service) => (
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <button
             onClick={() => {
               setSelected(s);
               setShowModal(true);
             }}
-            className="text-xs text-dental-600 font-medium"
+            className="text-blue-600 hover:text-blue-800 font-medium text-sm"
           >
             Edit
           </button>
           <button
             onClick={async () => {
-              if (confirm("Delete service?")) {
+              if (confirm("Xóa dịch vụ này?")) {
                 await serviceApi.delete(s._id);
                 refetch();
               }
             }}
-            className="text-xs text-red-500 font-medium"
+            className="text-red-600 hover:text-red-800 font-medium text-sm"
           >
             Delete
           </button>
@@ -88,32 +94,35 @@ export default function AdminServices() {
   ];
 
   return (
-    <DashboardLayout title="Service Management">
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="font-display font-bold text-xl text-surface-900">
-              Dental Services
-            </h2>
-            <p className="text-sm text-surface-500">
-              {(services || []).length} services available
-            </p>
+    <div className="flex h-screen bg-gray-50">
+      <AdminSidebar />
+      <div className="flex-1 ml-64 overflow-y-auto">
+        {/* Header */}
+        <div className="bg-white border-b border-gray-200 p-6 sticky top-0 z-10">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Quản lý Dịch vụ
+              </h1>
+              <p className="text-gray-600 text-sm">Wednesday, May 13, 2026</p>
+            </div>
+            <button
+              onClick={() => {
+                setSelected(null);
+                setShowModal(true);
+              }}
+              className="bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
+            >
+              + Add Service
+            </button>
           </div>
-          <button
-            onClick={() => {
-              setSelected(null);
-              setShowModal(true);
-            }}
-            className="btn-primary"
-          >
-            + Add Service
-          </button>
         </div>
 
-        {/* Category cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {["Preventive", "Restorative", "Cosmetic", "Emergency"].map(
-            (cat, i) => {
+        {/* Main Content */}
+        <div className="p-6 space-y-6">
+          {/* Category cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {["Phòng ngừa", "Phục hồi", "Thẩm mỹ", "Cấp cứu"].map((cat, i) => {
               const icons = ["🛡️", "🔧", "✨", "🚨"];
               const count = (services || []).filter(
                 (s) => s.category === cat,
@@ -121,19 +130,34 @@ export default function AdminServices() {
               return (
                 <div
                   key={cat}
-                  className="card text-center hover:shadow-card-hover transition-all"
+                  className="bg-white rounded-lg p-4 shadow hover:shadow-lg transition-all text-center"
                 >
-                  <div className="text-2xl mb-1">{icons[i]}</div>
-                  <p className="font-bold text-lg text-surface-800">{count}</p>
-                  <p className="text-xs text-surface-500">{cat}</p>
+                  <div className="text-3xl mb-2">{icons[i]}</div>
+                  <p className="font-bold text-2xl text-gray-900">{count}</p>
+                  <p className="text-xs text-gray-500 mt-1">{cat}</p>
                 </div>
               );
-            },
-          )}
-        </div>
+            })}
+          </div>
 
-        <div className="card">
-          <Table columns={columns} data={services || []} loading={loading} />
+          <div className="bg-white rounded-lg shadow">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-lg font-bold text-gray-900">
+                Dental Services
+              </h2>
+              <p className="text-sm text-gray-600">
+                {(services || []).length} services available
+              </p>
+            </div>
+
+            <div className="overflow-x-auto">
+              <Table
+                columns={columns}
+                data={services || []}
+                loading={loading}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -150,7 +174,7 @@ export default function AdminServices() {
           }}
         />
       </Modal>
-    </DashboardLayout>
+    </div>
   );
 }
 
