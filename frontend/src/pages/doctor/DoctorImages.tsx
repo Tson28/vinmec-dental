@@ -105,94 +105,98 @@ export default function DoctorImages() {
         </div>
 
         <div className="space-y-4 p-8">
-              className="hidden"
-              onChange={handleUpload}
-            />
-          </div>
-        </div>
+          {/* Hidden file input */}
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleUpload}
+          />
 
-        {showUploadForm && (
-          <div className="card border-2 border-dental-400 p-4 bg-dental-50">
-            <div className="space-y-3">
-              <div>
-                <label className="label">Select Patient</label>
-                <select
-                  className="input"
-                  value={selectedPatient}
-                  onChange={(e) => setSelectedPatient(e.target.value)}
-                  disabled={loadingPatients}
-                >
-                  <option value="">Choose a patient...</option>
-                  {patients.map((p) => (
-                    <option key={p.id || p._id} value={p.id || p._id}>
-                      {p.name} - {p.email}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => fileRef.current?.click()}
-                  disabled={!selectedPatient || uploading}
-                  className="btn-primary flex-1"
-                >
-                  {uploading ? "Uploading..." : "Select Image"}
-                </button>
-                <button
-                  onClick={() => {
-                    setShowUploadForm(false);
-                    setSelectedPatient("");
-                    if (fileRef.current) fileRef.current.value = "";
-                  }}
-                  className="btn-secondary"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="skeleton aspect-square rounded-xl" />
-            ))}
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="card text-center py-16">
-            <p className="text-4xl mb-3">🖼️</p>
-            <p className="text-surface-500">No images found</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filtered.map((img) => (
-              <div
-                key={img.id}
-                onClick={() => setPreview(img)}
-                className="group relative aspect-square bg-surface-100 rounded-xl overflow-hidden cursor-pointer hover:shadow-card-hover transition-all duration-200"
-              >
-                <img
-                  src={img.url}
-                  alt={img.description || "Dental image"}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-surface-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-3">
-                  <p className="text-white text-xs font-semibold">
-                    {img.patientName}
-                  </p>
-                  <p className="text-white/70 text-[10px]">
-                    {typeIcon[img.type]} {img.type} •{" "}
-                    {img.uploadedAt?.split("T")[0]}
-                  </p>
+          {showUploadForm && (
+            <div className="card border-2 border-dental-400 p-4 bg-dental-50">
+              <div className="space-y-3">
+                <div>
+                  <label className="label">Select Patient</label>
+                  <select
+                    className="input"
+                    value={selectedPatient}
+                    onChange={(e) => setSelectedPatient(e.target.value)}
+                    disabled={loadingPatients}
+                  >
+                    <option value="">Choose a patient...</option>
+                    {patients.map((p) => (
+                      <option key={p.id || p._id} value={p.id || p._id}>
+                        {p.name} - {p.email}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => fileRef.current?.click()}
+                    disabled={!selectedPatient || uploading}
+                    className="btn-primary flex-1"
+                  >
+                    {uploading ? "Uploading..." : "Select Image"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowUploadForm(false);
+                      setSelectedPatient("");
+                      if (fileRef.current) fileRef.current.value = "";
+                    }}
+                    className="btn-secondary"
+                  >
+                    Cancel
+                  </button>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          )}
+
+          {loading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="skeleton aspect-square rounded-xl" />
+              ))}
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="card text-center py-16">
+              <p className="text-4xl mb-3">🖼️</p>
+              <p className="text-surface-500">No images found</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {filtered.map((img) => (
+                <div
+                  key={img.id}
+                  onClick={() => setPreview(img)}
+                  className="group relative aspect-square bg-surface-100 rounded-xl overflow-hidden cursor-pointer hover:shadow-card-hover transition-all duration-200"
+                >
+                  <img
+                    src={img.url}
+                    alt={img.description || "Dental image"}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-surface-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-3">
+                    <p className="text-white text-xs font-semibold">
+                      {img.patientName}
+                    </p>
+                    <p className="text-white/70 text-[10px]">
+                      {typeIcon[img.type]} {img.type} •{" "}
+                      {img.uploadedAt?.split("T")[0]}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Preview */}
+      {/* Preview Modal */}
       {preview && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-surface-900/80 backdrop-blur-sm p-4"
@@ -204,7 +208,7 @@ export default function DoctorImages() {
           >
             <img
               src={preview.url}
-              alt={preview.description}
+              alt={preview.description ?? "Dental image"}
               className="w-full max-h-[70vh] object-contain bg-surface-900"
             />
             <div className="p-4 flex items-center justify-between">
@@ -232,7 +236,6 @@ export default function DoctorImages() {
           </div>
         </div>
       )}
-      </div>
     </div>
   );
 }
