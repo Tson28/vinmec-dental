@@ -1,5 +1,5 @@
 import { useState } from "react";
-import DashboardLayout from "../../components/layout/DashboardLayout";
+import DoctorSidebar from "../../components/layout/DoctorSidebar";
 import Table from "../../components/ui/Table";
 import Modal from "../../components/ui/Modal";
 import AppointmentCalendar from "../../components/ui/AppointmentCalendar";
@@ -173,21 +173,22 @@ export default function DoctorAppointments() {
   ];
 
   return (
-    <DashboardLayout title="Appointments">
-      <div className="space-y-4">
-        <div className="flex items-center justify-between flex-wrap gap-3">
+    <div className="flex">
+      <DoctorSidebar />
+      <div className="flex-1 ml-64">
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between shadow-sm">
           <div>
-            <h2 className="font-display font-bold text-xl text-surface-900">
-              Tất cả lịch khám
-            </h2>
-            <p className="text-sm text-surface-500">
+            <h1 className="text-2xl font-bold text-gray-900">Lịch hẹn</h1>
+            <p className="text-sm text-gray-500 mt-1">
               {viewType === "calendar"
                 ? (appointments || []).length
-                : filtered.length}{" "}
-              lịch khám
+                : filtered.length} lịch hẹn
             </p>
           </div>
-          <div className="flex gap-2 items-center flex-wrap">
+        </div>
+
+        <div className="space-y-4 p-8">
             <div className="flex gap-2 bg-surface-100 p-1 rounded-lg">
               <button
                 onClick={() => setViewType("calendar")}
@@ -365,6 +366,7 @@ export default function DoctorAppointments() {
           </div>
         </div>
       </Modal>
-    </DashboardLayout>
+      </div>
+    </div>
   );
 }

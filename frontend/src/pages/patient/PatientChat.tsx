@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import DashboardLayout from "../../components/layout/DashboardLayout";
+import PatientSidebar from "../../components/layout/PatientSidebar";
 import ChatMessage, { type Message } from "../../components/chat/ChatMessage";
 import ConversationList from "../../components/chat/ConversationList";
 import {
@@ -328,53 +328,61 @@ export default function PatientChat() {
   };
 
   return (
-    <DashboardLayout title="Chat">
-      <div className="h-[calc(100vh-160px)] flex gap-4">
-        {/* Conversation List */}
-        <div className="w-80 flex-shrink-0">
-          <ConversationList
-            onSelectConversation={handleSelectConversation}
-            onSelectChatbot={handleSelectChatbot}
-            loading={loading}
-            isChatbotSelected={isChatbot}
-          />
+    <div className="flex">
+      <PatientSidebar />
+      <div className="flex-1 ml-64">
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-8 py-4 shadow-sm">
+          <h1 className="text-2xl font-bold text-gray-900">Tin nhắn</h1>
         </div>
 
-        {/* Chat Area */}
-        <div className="flex-1 min-w-0">
-          {isChatbot ? (
-            <ChatMessage
-              messages={messages}
-              onSendText={handleSendText}
-              onSendImage={handleSendImage}
-              onSendAudio={handleSendAudio}
+        <div className="h-[calc(100vh-113px)] flex gap-4 p-8">
+          {/* Conversation List */}
+          <div className="w-80 flex-shrink-0">
+            <ConversationList
+              onSelectConversation={handleSelectConversation}
+              onSelectChatbot={handleSelectChatbot}
               loading={loading}
-              title="Trợ lý Nha khoa AI"
-              placeholder="Hỏi tôi về sức khỏe răng của bạn..."
+              isChatbotSelected={isChatbot}
             />
-          ) : selectedConversation && selectedUser ? (
-            <ChatMessage
-              messages={messages}
-              onSendText={handleSendText}
-              onSendImage={handleSendImage}
-              onSendAudio={handleSendAudio}
-              loading={loading}
-              title={`Chat with ${selectedUser.name || "Doctor"}`}
-              placeholder="Type a message..."
-            />
-          ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center bg-white rounded-xl border border-surface-100 shadow-card">
-              <div className="text-5xl mb-4">💬</div>
-              <p className="text-surface-600 font-medium mb-2">
-                Select a conversation
-              </p>
-              <p className="text-sm text-surface-400">
-                Choose a doctor from the list or chat with AI assistant
-              </p>
-            </div>
-          )}
+          </div>
+
+          {/* Chat Area */}
+          <div className="flex-1 min-w-0">
+            {isChatbot ? (
+              <ChatMessage
+                messages={messages}
+                onSendText={handleSendText}
+                onSendImage={handleSendImage}
+                onSendAudio={handleSendAudio}
+                loading={loading}
+                title="Trợ lý Nha khoa AI"
+                placeholder="Hỏi tôi về sức khỏe răng của bạn..."
+              />
+            ) : selectedConversation && selectedUser ? (
+              <ChatMessage
+                messages={messages}
+                onSendText={handleSendText}
+                onSendImage={handleSendImage}
+                onSendAudio={handleSendAudio}
+                loading={loading}
+                title={`Chat với ${selectedUser.name || "Bác sĩ"}`}
+                placeholder="Nhập tin nhắn..."
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center bg-white rounded-lg border border-gray-200 shadow">
+                <div className="text-5xl mb-4">💬</div>
+                <p className="text-gray-600 font-medium mb-2">
+                  Chọn một cuộc trò chuyện
+                </p>
+                <p className="text-sm text-gray-400">
+                  Chọn một bác sĩ từ danh sách hoặc chat với trợ lý AI
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </DashboardLayout>
+    </div>
   );
 }

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import DashboardLayout from "../../components/layout/DashboardLayout";
-import StatCard from "../../components/ui/StatCard";
+import PatientSidebar from "../../components/layout/PatientSidebar";
 import { appointmentApi, recordApi, scoreApi } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../hooks/useToast";
@@ -70,163 +69,164 @@ export default function PatientDashboard() {
         : "text-red-600";
   const scoreLabel =
     scoreValue >= 80
-      ? "Excellent"
+      ? "Xuất sắc"
       : scoreValue >= 60
-        ? "Good"
-        : "Needs Attention";
+        ? "Tốt"
+        : "Cần chú ý";
 
   return (
-    <DashboardLayout title="My Dashboard">
-      <div className="space-y-6">
-        {/* Welcome */}
-        <div className="card bg-gradient-dental text-green-400 border-0 flex items-center justify-between">
+    <div className="flex">
+      <PatientSidebar />
+      <div className="flex-1 ml-64">
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between shadow-sm">
           <div>
-            <p className="text-dental-100 text-sm">Welcome back,</p>
-            <h2 className="font-display font-bold text-2xl mt-1">
-              {user?.name}
-            </h2>
-            <p className="text-dental-200 text-sm mt-1">
-              Track your dental health journey
+            <h1 className="text-2xl font-bold text-gray-900">
+              Tổng quan
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+              {new Date().toLocaleDateString("vi-VN", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
             </p>
           </div>
-          <div className="text-6xl">🦷</div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <StatCard
-            label="My Appointments"
-            value={stats.appointments}
-            icon="📅"
-            color="blue"
-          />
-          <StatCard
-            label="Medical Records"
-            value={stats.records}
-            icon="📋"
-            color="teal"
-          />
-          <div className="stat-card">
-            <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center text-amber-600 text-2xl flex-shrink-0">
-              ⭐
-            </div>
-            <div>
-              <p className={`text-2xl font-display font-bold ${scoreColor}`}>
-                {scoreValue}
-              </p>
-              <p className="text-xs font-semibold text-surface-500 mt-0.5">
-                Dental Score
-              </p>
-              <p className={`text-xs font-medium mt-0.5 ${scoreColor}`}>
-                {scoreLabel}
-              </p>
-            </div>
+          <div className="text-right">
+            <p className="text-sm text-gray-600">
+              Xin chào, <span className="font-semibold">{user?.name}</span>
+            </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Upcoming */}
-          <div className="card">
-            <h3 className="font-bold text-surface-800 mb-4">
-              Upcoming Appointments
-            </h3>
-            {upcoming.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-4xl mb-2">📅</p>
-                <p className="text-sm text-surface-400">
-                  No upcoming appointments
-                </p>
-                <a
-                  href="/patient/appointments"
-                  className="btn-primary mt-3 inline-block text-sm"
-                >
-                  Book Now
-                </a>
-              </div>
-            ) : (
-              <ul className="space-y-3">
-                {upcoming.map((apt) => (
-                  <li
-                    key={apt.id}
-                    className="flex items-center justify-between p-3 bg-surface-50 rounded-xl"
-                  >
-                    <div>
-                      <p className="font-semibold text-surface-800 text-sm">
+        <div className="space-y-6 p-8">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+            <p className="text-sm text-gray-500 font-medium">Lịch hẹn của tôi</p>
+            <p className="text-3xl font-bold text-gray-900 mt-2">
+              {stats.appointments}
+            </p>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-teal-500">
+            <p className="text-sm text-gray-500 font-medium">Hồ sơ y tế</p>
+            <p className="text-3xl font-bold text-gray-900 mt-2">
+              {stats.records}
+            </p>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-amber-500">
+            <p className="text-sm text-gray-500 font-medium">Điểm sức khỏe</p>
+            <p className={`text-3xl font-bold mt-2 ${scoreColor}`}>
+              {scoreValue}
+            </p>
+            <p className={`text-xs font-medium mt-1 ${scoreColor}`}>
+              {scoreLabel}
+            </p>
+          </div>
+        </div>
+
+        {/* Upcoming Appointments */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">
+            Lịch hẹn sắp tới
+          </h3>
+          {upcoming.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-4xl mb-2">📅</p>
+              <p className="text-sm text-gray-500">Không có lịch hẹn sắp tới</p>
+              <a
+                href="/patient/appointments"
+                className="inline-block mt-4 px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition text-sm"
+              >
+                Đặt lịch hẹn
+              </a>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="border-b border-gray-200">
+                  <tr className="text-gray-600 font-semibold">
+                    <th className="text-left py-3 px-4">Dịch vụ</th>
+                    <th className="text-left py-3 px-4">Bác sĩ</th>
+                    <th className="text-left py-3 px-4">Ngày</th>
+                    <th className="text-left py-3 px-4">Giờ</th>
+                    <th className="text-left py-3 px-4">Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {upcoming.map((apt) => (
+                    <tr
+                      key={apt.id}
+                      className="border-b border-gray-100 hover:bg-gray-50 transition"
+                    >
+                      <td className="py-3 px-4 font-medium text-gray-900">
                         {typeof apt.service === "string"
                           ? apt.service
-                          : apt.service.name}
-                      </p>
-                      <p className="text-xs text-surface-500">
-                        Dr. {apt.doctorName} • {apt.date} {apt.time}
-                      </p>
-                    </div>
-                    <span className={`badge ${statusColor[apt.status]}`}>
-                      {apt.status}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          {/* Quick Actions */}
-          <div className="card">
-            <h3 className="font-bold text-surface-800 mb-4">Quick Actions</h3>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                {
-                  icon: "📅",
-                  label: "Book Appointment",
-                  href: "/patient/appointments",
-                },
-                { icon: "📋", label: "View Records", href: "/patient/records" },
-                { icon: "🖼️", label: "My Images", href: "/patient/images" },
-                { icon: "⭐", label: "Dental Score", href: "/patient/score" },
-                { icon: "💬", label: "Messages", href: "/patient/chat" },
-                { icon: "👤", label: "My Profile", href: "/patient/profile" },
-              ].map((a) => (
-                <a
-                  key={a.label}
-                  href={a.href}
-                  className="flex items-center gap-2 p-3 bg-surface-50 hover:bg-dental-50 rounded-xl transition cursor-pointer"
-                >
-                  <span className="text-xl">{a.icon}</span>
-                  <span className="text-sm font-medium text-surface-700">
-                    {a.label}
-                  </span>
-                </a>
-              ))}
+                          : apt.service?.name}
+                      </td>
+                      <td className="py-3 px-4 text-gray-600">
+                        Dr. {apt.doctorName}
+                      </td>
+                      <td className="py-3 px-4 text-gray-600">{apt.date}</td>
+                      <td className="py-3 px-4 text-gray-600">{apt.time}</td>
+                      <td className="py-3 px-4">
+                        <span
+                          className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                            apt.status === "confirmed"
+                              ? "bg-green-100 text-green-700"
+                              : apt.status === "pending"
+                                ? "bg-amber-100 text-amber-700"
+                                : apt.status === "completed"
+                                  ? "bg-blue-100 text-blue-700"
+                                  : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {apt.status === "confirmed"
+                            ? "Xác nhận"
+                            : apt.status === "pending"
+                              ? "Chờ"
+                              : apt.status === "completed"
+                                ? "Hoàn tất"
+                                : "Hủy"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Dental Tips */}
-        <div className="card bg-gradient-to-br from-mint-50 to-dental-50 border-mint-200">
-          <h3 className="font-bold text-surface-800 mb-3">
-            💡 Daily Dental Tips
+        <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-lg shadow p-6 border border-green-100">
+          <h3 className="font-bold text-gray-900 mb-4">
+            💡 Mẹo chăm sóc răng hàng ngày
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
               {
                 icon: "🪥",
-                tip: "Brush teeth at least twice daily for 2 minutes each time",
+                tip: "Đánh răng ít nhất 2 lần/ngày, mỗi lần 2 phút",
               },
-              { icon: "🧵", tip: "Floss daily to remove plaque between teeth" },
+              { icon: "🧵", tip: "Dùng chỉ nha khoa hàng ngày để loại bỏ plaque" },
               {
                 icon: "🩺",
-                tip: "Visit your dentist every 6 months for check-ups",
+                tip: "Khám nha khoa mỗi 6 tháng một lần",
               },
             ].map((t, i) => (
               <div
                 key={i}
-                className="flex items-start gap-3 p-3 bg-white/70 rounded-xl"
+                className="flex items-start gap-3 p-3 bg-white rounded-lg"
               >
                 <span className="text-2xl">{t.icon}</span>
-                <p className="text-sm text-surface-700">{t.tip}</p>
+                <p className="text-sm text-gray-700">{t.tip}</p>
               </div>
             ))}
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </div>
   );
 }

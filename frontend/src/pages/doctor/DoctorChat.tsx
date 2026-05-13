@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import DashboardLayout from "../../components/layout/DashboardLayout";
+import DoctorSidebar from "../../components/layout/DoctorSidebar";
 import ChatMessage, { type Message } from "../../components/chat/ChatMessage";
 import ConversationList from "../../components/chat/ConversationList";
 import { conversationApi, imageApi, appointmentApi } from "../../services/api";
@@ -234,41 +234,49 @@ export default function DoctorChat() {
   };
 
   return (
-    <DashboardLayout title="Chat">
-      <div className="h-[calc(100vh-160px)] flex gap-4">
-        {/* Conversation List */}
-        <div className="w-80 flex-shrink-0">
-          <ConversationList
-            onSelectConversation={handleSelectConversation}
-            loading={loading}
-          />
+    <div className="flex">
+      <DoctorSidebar />
+      <div className="flex-1 ml-64">
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-8 py-4 shadow-sm">
+          <h1 className="text-2xl font-bold text-gray-900">Tin nhắn</h1>
         </div>
 
-        {/* Chat Area */}
-        <div className="flex-1 min-w-0">
-          {selectedConversation && selectedUser ? (
-            <ChatMessage
-              messages={messages}
-              onSendText={handleSendText}
-              onSendImage={handleSendImage}
-              onSendAudio={handleSendAudio}
+        <div className="h-[calc(100vh-113px)] flex gap-4 p-8">
+          {/* Conversation List */}
+          <div className="w-80 flex-shrink-0">
+            <ConversationList
+              onSelectConversation={handleSelectConversation}
               loading={loading}
-              title={`Chat with ${selectedUser.name || "Patient"}`}
-              placeholder="Type a message..."
             />
-          ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center bg-white rounded-xl border border-surface-100 shadow-card">
-              <div className="text-5xl mb-4">💬</div>
-              <p className="text-surface-600 font-medium mb-2">
-                Select a conversation
-              </p>
-              <p className="text-sm text-surface-400">
-                Choose a patient from the list to start chatting
-              </p>
-            </div>
-          )}
+          </div>
+
+          {/* Chat Area */}
+          <div className="flex-1 min-w-0">
+            {selectedConversation && selectedUser ? (
+              <ChatMessage
+                messages={messages}
+                onSendText={handleSendText}
+                onSendImage={handleSendImage}
+                onSendAudio={handleSendAudio}
+                loading={loading}
+                title={`Chat với ${selectedUser.name || "Bệnh nhân"}`}
+                placeholder="Nhập tin nhắn..."
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center bg-white rounded-xl border border-gray-200 shadow">
+                <div className="text-5xl mb-4">💬</div>
+                <p className="text-gray-600 font-medium mb-2">
+                  Chọn một cuộc trò chuyện
+                </p>
+                <p className="text-sm text-gray-400">
+                  Chọn một bệnh nhân từ danh sách để bắt đầu trò chuyện
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </DashboardLayout>
+    </div>
   );
 }

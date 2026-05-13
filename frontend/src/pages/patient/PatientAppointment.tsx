@@ -1,5 +1,5 @@
 import { useState } from "react";
-import DashboardLayout from "../../components/layout/DashboardLayout";
+import PatientSidebar from "../../components/layout/PatientSidebar";
 import Table from "../../components/ui/Table";
 import Modal from "../../components/ui/Modal";
 import AppointmentCalendar from "../../components/ui/AppointmentCalendar";
@@ -70,25 +70,34 @@ export default function PatientAppointment() {
   ];
 
   return (
-    <DashboardLayout title="My Appointments">
-      <div className="space-y-4">
-        <div className="flex items-center justify-between flex-wrap gap-3">
+    <div className="flex">
+      <PatientSidebar />
+      <div className="flex-1 ml-64">
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between shadow-sm">
           <div>
-            <h2 className="font-display font-bold text-xl text-surface-900">
-              Appointments
-            </h2>
-            <p className="text-sm text-surface-500">
-              {(appointments || []).length} total
+            <h1 className="text-2xl font-bold text-gray-900">Lịch hẹn</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              {(appointments || []).length} lịch hẹn
             </p>
           </div>
-          <div className="flex gap-2 items-center">
-            <div className="flex gap-2 bg-surface-100 p-1 rounded-lg">
+          <button 
+            onClick={() => setShowModal(true)} 
+            className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition"
+          >
+            + Đặt lịch
+          </button>
+        </div>
+
+        <div className="space-y-4 p-8">
+          <div className="flex gap-2 items-center mb-4">
+            <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
               <button
                 onClick={() => setViewType("calendar")}
                 className={`px-3 py-1.5 rounded text-sm font-medium transition ${
                   viewType === "calendar"
-                    ? "bg-white text-dental-600 shadow-sm"
-                    : "text-surface-600 hover:text-surface-900"
+                    ? "bg-white text-green-600 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
                 }`}
               >
                 Lịch
@@ -97,117 +106,109 @@ export default function PatientAppointment() {
                 onClick={() => setViewType("table")}
                 className={`px-3 py-1.5 rounded text-sm font-medium transition ${
                   viewType === "table"
-                    ? "bg-white text-dental-600 shadow-sm"
-                    : "text-surface-600 hover:text-surface-900"
+                    ? "bg-white text-green-600 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
                 }`}
               >
                 Danh sách
               </button>
             </div>
-            <button onClick={() => setShowModal(true)} className="btn-primary">
-              + Đặt lịch
-            </button>
           </div>
-        </div>
 
-        {viewType === "calendar" ? (
-          <AppointmentCalendar
-            appointments={appointments || []}
-            onSelectAppointment={(apt) => {
-              setSelectedAppointment(apt);
-            }}
-            loading={loading}
-          />
-        ) : (
-          <div className="card">
-            <Table
-              columns={columns}
-              data={appointments || []}
+          {viewType === "calendar" ? (
+            <AppointmentCalendar
+              appointments={appointments || []}
+              onSelectAppointment={(apt) => {
+                setSelectedAppointment(apt);
+              }}
               loading={loading}
             />
-          </div>
-        )}
-      </div>
+          ) : (
+            <div className="bg-white rounded-lg shadow">
+              <Table
+                columns={columns}
+                data={appointments || []}
+                loading={loading}
+              />
+            </div>
+          )}
+        </div>
 
-      {selectedAppointment && (
-        <Modal
-          open={!!selectedAppointment}
-          onClose={() => setSelectedAppointment(null)}
-          title="Chi tiết lịch khám"
-        >
-          <div className="space-y-4">
-            <div className="space-y-3">
-              {[
-                ["Bác sĩ", selectedAppointment.doctorName],
-                [
-                  "Dịch vụ",
-                  typeof selectedAppointment.service === "string"
-                    ? selectedAppointment.service
-                    : selectedAppointment.service?.name || "Khám tổng quát",
-                ],
-                ["Ngày", selectedAppointment.date],
-                ["Giờ", selectedAppointment.time],
-                [
-                  "Trạng thái",
-                  <span
-                    className={`badge ${statusColor[selectedAppointment.status]}`}
+        {selectedAppointment && (
+          <Modal
+            open={!!selectedAppointment}
+            onClose={() => setSelectedAppointment(null)}
+            title="Chi tiết lịch khám"
+          >
+            <div className="space-y-4">
+              <div className="space-y-3">
+                {[
+                  ["Bác sĩ", selectedAppointment.doctorName],
+                  [
+                    "Dịch vụ",
+                    typeof selectedAppointment.service === "string"
+                      ? selectedAppointment.service
+                      : selectedAppointment.service?.name || "Khám tổng quát",
+                  ],
+                  ["Ngày", selectedAppointment.date],
+                  ["Giờ", selectedAppointment.time],
+                  [
+                    "Trạng thái",
+                    <span
+                      className={`badge ${statusColor[selectedAppointment.status]}`}
+                    >
+                      {selectedAppointment.status}
+                    </span>,
+                  ],
+                  ["Ghi chú", selectedAppointment.notes || "—"],
+                ].map(([k, v]) => (
+                  <div key={k} className="flex gap-3">
+                    <span className="label w-24 flex-shrink-0">{k}</span>
+                    <span className="text-sm text-gray-800">{v}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                {selectedAppointment.status === "pending" && (
+                  <button
+                    onClick={async () => {
+                      await appointmentApi.cancel(selectedAppointment.id);
+                      refetch();
+                      setSelectedAppointment(null);
+                    }}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition flex-1"
                   >
-                    {selectedAppointment.status}
-                  </span>,
-                ],
-                ["Ghi chú", selectedAppointment.notes || "—"],
-              ].map(([k, v]) => (
-                <div key={k} className="flex gap-3">
-                  <span className="label w-24 flex-shrink-0">{k}</span>
-                  <span className="text-sm text-surface-800">{v}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex gap-2 pt-4">
-              {selectedAppointment.status === "pending" && (
+                    Hủy lịch
+                  </button>
+                )}
                 <button
-                  onClick={async () => {
-                    await appointmentApi.cancel(selectedAppointment.id);
-                    refetch();
-                    setSelectedAppointment(null);
-                  }}
-                  className="btn-secondary flex-1"
+                  onClick={() => setSelectedAppointment(null)}
+                  className="px-4 py-2 bg-gray-200 text-gray-900 rounded-lg font-medium hover:bg-gray-300 transition flex-1"
                 >
-                  Hủy lịch
+                  Đóng
                 </button>
-              )}
-              <button
-                onClick={() => setSelectedAppointment(null)}
-                className="btn-secondary flex-1"
-              >
-                Đóng
-              </button>
+              </div>
             </div>
-          </div>
+          </Modal>
+        )}
+
+        <Modal
+          open={showModal}
+          onClose={() => setShowModal(false)}
+          title="Đặt lịch khám"
+        >
+          <BookingForm
+            services={services || []}
+            doctors={doctors || []}
+            onClose={() => {
+              setShowModal(false);
+              refetch();
+            }}
+          />
         </Modal>
-      )}
-
-      <Modal
-        open={showModal}
-        onClose={() => setShowModal(false)}
-        title="Đặt lịch khám"
-      >
-        <BookingForm
-          services={services || []}
-          doctors={doctors || []}
-          onClose={() => {
-            setShowModal(false);
-            refetch();
-          }}
-        />
-      </Modal>
-    </DashboardLayout>
-  );
-}
-
-function BookingForm({
-  services,
+      </div>
+    </div>
   doctors,
   onClose,
 }: {

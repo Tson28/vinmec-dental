@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import DashboardLayout from "../../components/layout/DashboardLayout";
+import DoctorSidebar from "../../components/layout/DoctorSidebar";
 import { imageApi, patientApi } from "../../services/api";
 import { useApi } from "../../hooks/useApi";
 import { useToast } from "../../hooks/useToast";
@@ -86,38 +86,25 @@ export default function DoctorImages() {
   };
 
   return (
-    <DashboardLayout title="Images Gallery">
-      <div className="space-y-4">
-        <div className="flex items-center justify-between flex-wrap gap-3">
+    <div className="flex">
+      <DoctorSidebar />
+      <div className="flex-1 ml-64">
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between shadow-sm">
           <div>
-            <h2 className="font-display font-bold text-xl text-surface-900">
-              All Patient Images
-            </h2>
-            <p className="text-sm text-surface-500">{filtered.length} images</p>
+            <h1 className="text-2xl font-bold text-gray-900">Hình ảnh</h1>
+            <p className="text-sm text-gray-500 mt-1">{filtered.length} hình ảnh</p>
           </div>
-          <div className="flex gap-3">
-            <div className="flex gap-2">
-              {["all", "xray", "photo", "scan"].map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setFilter(t)}
-                  className={`text-xs px-3 py-1.5 rounded-full font-semibold transition ${filter === t ? "bg-dental-600 text-white" : "bg-surface-100 text-surface-600"}`}
-                >
-                  {typeIcon[t] || "🖼️"} {t.charAt(0).toUpperCase() + t.slice(1)}
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={() => setShowUploadForm(true)}
-              disabled={uploading}
-              className="btn-primary"
-            >
-              + Upload
-            </button>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
+          <button
+            onClick={() => setShowUploadForm(true)}
+            disabled={uploading}
+            className="px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition disabled:opacity-50"
+          >
+            {uploading ? "Đang tải..." : "+ Tải lên"}
+          </button>
+        </div>
+
+        <div className="space-y-4 p-8">
               className="hidden"
               onChange={handleUpload}
             />
@@ -245,6 +232,7 @@ export default function DoctorImages() {
           </div>
         </div>
       )}
-    </DashboardLayout>
+      </div>
+    </div>
   );
 }

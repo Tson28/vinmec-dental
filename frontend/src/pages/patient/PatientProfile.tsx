@@ -1,5 +1,5 @@
 import { useState } from "react";
-import DashboardLayout from "../../components/layout/DashboardLayout";
+import PatientSidebar from "../../components/layout/PatientSidebar";
 import { useAuth } from "../../context/AuthContext";
 import { patientApi } from "../../services/api";
 
@@ -29,55 +29,64 @@ export default function PatientProfile() {
   };
 
   return (
-    <DashboardLayout title="My Profile">
-      <div className="max-w-2xl space-y-6">
-        {success && (
-          <div className="px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-xl text-sm text-emerald-600">
-            ✅ Profile updated successfully!
-          </div>
-        )}
-
-        {/* Avatar Card */}
-        <div className="card flex items-center gap-6">
-          <div className="w-20 h-20 rounded-2xl bg-gradient-dental flex items-center justify-center text-white text-3xl font-bold flex-shrink-0">
-            {user?.name?.charAt(0) || "?"}
-          </div>
+    <div className="flex">
+      <PatientSidebar />
+      <div className="flex-1 ml-64">
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between shadow-sm">
           <div>
-            <h2 className="font-display font-bold text-2xl text-surface-900">
-              {user?.name}
-            </h2>
-            <span className="badge badge-green mt-1">Patient</span>
-            <p className="text-sm text-surface-500 mt-1">{user?.email}</p>
+            <h1 className="text-2xl font-bold text-gray-900">Hồ sơ của tôi</h1>
           </div>
-          <button
-            onClick={() => setEditing(!editing)}
-            className="ml-auto btn-secondary"
-          >
-            {editing ? "Cancel" : "Edit Profile"}
-          </button>
         </div>
 
-        {/* Info */}
-        <div className="card">
-          <h3 className="font-bold text-surface-800 mb-4">
-            Personal Information
-          </h3>
-          {editing ? (
-            <form onSubmit={handleSave} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="label">Full Name</label>
-                  <input
-                    className="input"
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="label">Email</label>
-                  <input
-                    type="email"
-                    className="input"
+        <div className="max-w-2xl space-y-6 p-8">
+          {success && (
+            <div className="px-4 py-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-600">
+              ✅ Cập nhật hồ sơ thành công!
+            </div>
+          )}
+
+          {/* Avatar Card */}
+          <div className="bg-white rounded-lg shadow p-6 flex items-center gap-6">
+            <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white text-3xl font-bold flex-shrink-0">
+              {user?.name?.charAt(0) || "?"}
+            </div>
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold text-gray-900">
+                {user?.name}
+              </h2>
+              <span className="inline-block mt-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Bệnh nhân</span>
+              <p className="text-sm text-gray-500 mt-1">{user?.email}</p>
+            </div>
+            <button
+              onClick={() => setEditing(!editing)}
+              className="px-4 py-2 bg-gray-200 text-gray-900 rounded-lg font-medium hover:bg-gray-300 transition"
+            >
+              {editing ? "Hủy" : "Chỉnh sửa"}
+            </button>
+          </div>
+
+          {/* Info */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="font-bold text-gray-900 mb-4">
+              Thông tin cá nhân
+            </h3>
+            {editing ? (
+              <form onSubmit={handleSave} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Họ tên</label>
+                    <input
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      value={form.name}
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+                    <input
+                      type="email"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                     value={form.email}
                     onChange={(e) =>
                       setForm({ ...form, email: e.target.value })
@@ -141,26 +150,26 @@ export default function PatientProfile() {
         </div>
 
         {/* Health Summary */}
-        <div className="card">
-          <h3 className="font-bold text-surface-800 mb-4">Health Summary</h3>
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="font-bold text-gray-900 mb-4">Tóm tắt sức khỏe</h3>
           <div className="grid grid-cols-3 gap-4">
             {[
-              { label: "Blood Type", value: "O+", icon: "🩸" },
-              { label: "Allergies", value: "None", icon: "⚠️" },
-              { label: "Last Visit", value: "2024-02-15", icon: "📅" },
+              { label: "Nhóm máu", value: "O+", icon: "🩸" },
+              { label: "Dị ứng", value: "Không", icon: "⚠️" },
+              { label: "Lần khám cuối", value: "2024-02-15", icon: "📅" },
             ].map(({ label, value, icon }) => (
               <div
                 key={label}
-                className="bg-surface-50 rounded-xl p-4 text-center"
+                className="bg-gray-50 rounded-lg p-4 text-center"
               >
                 <p className="text-2xl mb-2">{icon}</p>
-                <p className="font-bold text-surface-800 text-sm">{value}</p>
-                <p className="text-xs text-surface-500">{label}</p>
+                <p className="font-bold text-gray-900 text-sm">{value}</p>
+                <p className="text-xs text-gray-500">{label}</p>
               </div>
             ))}
           </div>
         </div>
-      </div>
-    </DashboardLayout>
+        </div>
+    </div>
   );
 }

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import DashboardLayout from "../../components/layout/DashboardLayout";
-import StatCard from "../../components/ui/StatCard";
+import DoctorSidebar from "../../components/layout/DoctorSidebar";
 import { appointmentApi, patientApi, recordApi } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../hooks/useToast";
@@ -73,8 +72,32 @@ export default function DoctorDashboard() {
   };
 
   return (
-    <DashboardLayout title="Doctor Dashboard">
-      <div className="space-y-6">
+    <div className="flex">
+      <DoctorSidebar />
+      <div className="flex-1 ml-64">
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between shadow-sm">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Tổng quan
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+              {new Date().toLocaleDateString("vi-VN", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-sm text-gray-600">
+              Xin chào, <span className="font-semibold">Dr. {user?.name?.split(" ").pop()}</span>
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-6 p-8">
         <div className="card bg-gradient-dental text-blue-400 border-0">
           <p className="text-dental-100 text-sm">Good morning,</p>
           <h2 className="font-display font-bold text-2xl mt-1">
@@ -86,100 +109,92 @@ export default function DoctorDashboard() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <StatCard
-            label="Total Patients"
-            value={loading ? "—" : stats.patients}
-            icon="🧑‍🤝‍🧑"
-            color="teal"
-          />
-          <StatCard
-            label="Today's Appointments"
-            value={loading ? "—" : stats.todayAppts}
-            icon="📅"
-            color="blue"
-          />
-          <StatCard
-            label="Medical Records"
-            value={loading ? "—" : stats.records}
-            icon="📋"
-            color="green"
-          />
+          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
+            <p className="text-sm text-gray-500 font-medium">Bệnh nhân</p>
+            <p className="text-3xl font-bold text-gray-900 mt-2">
+              {loading ? "—" : stats.patients}
+            </p>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+            <p className="text-sm text-gray-500 font-medium">Lịch hẹn hôm nay</p>
+            <p className="text-3xl font-bold text-gray-900 mt-2">
+              {loading ? "—" : stats.todayAppts}
+            </p>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+            <p className="text-sm text-gray-500 font-medium">Hồ sơ y tế</p>
+            <p className="text-3xl font-bold text-gray-900 mt-2">
+              {loading ? "—" : stats.records}
+            </p>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="card">
-            <h3 className="font-bold text-surface-800 mb-4">
-              Upcoming Appointments
-            </h3>
-            {upcoming.length === 0 ? (
-              <p className="text-sm text-surface-400 text-center py-8">
-                No upcoming appointments
-              </p>
-            ) : (
-              <ul className="space-y-3">
-                {upcoming.map((apt) => (
-                  <li
-                    key={apt.id}
-                    className="flex items-center justify-between p-3 bg-surface-50 rounded-xl"
-                  >
-                    <div>
-                      <p className="font-semibold text-surface-800 text-sm">
+        {/* Upcoming Appointments */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">
+            Lịch hẹn sắp tới
+          </h3>
+          {upcoming.length === 0 ? (
+            <p className="text-sm text-gray-500 text-center py-8">
+              Không có lịch hẹn sắp tới
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="border-b border-gray-200">
+                  <tr className="text-gray-600 font-semibold">
+                    <th className="text-left py-3 px-4">Bệnh nhân</th>
+                    <th className="text-left py-3 px-4">Ngày</th>
+                    <th className="text-left py-3 px-4">Giờ</th>
+                    <th className="text-left py-3 px-4">Dịch vụ</th>
+                    <th className="text-left py-3 px-4">Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {upcoming.map((apt) => (
+                    <tr
+                      key={apt.id}
+                      className="border-b border-gray-100 hover:bg-gray-50 transition"
+                    >
+                      <td className="py-3 px-4 font-medium text-gray-900">
                         {apt.patientName}
-                      </p>
-                      <p className="text-xs text-surface-500">
-                        {apt.date} • {apt.time} •{" "}
+                      </td>
+                      <td className="py-3 px-4 text-gray-600">{apt.date}</td>
+                      <td className="py-3 px-4 text-gray-600">{apt.time}</td>
+                      <td className="py-3 px-4 text-gray-600">
                         {typeof apt.service === "string"
                           ? apt.service
-                          : apt.service.name}
-                      </p>
-                    </div>
-                    <span className={`badge ${statusColor[apt.status]}`}>
-                      {apt.status}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <div className="card">
-            <h3 className="font-bold text-surface-800 mb-4">Quick Actions</h3>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                {
-                  icon: "🧑‍🤝‍🧑",
-                  label: "View Patients",
-                  href: "/doctor/patients",
-                },
-                {
-                  icon: "📅",
-                  label: "Appointments",
-                  href: "/doctor/appointments",
-                },
-                { icon: "📋", label: "Records", href: "/doctor/records" },
-                { icon: "💬", label: "Messages", href: "/doctor/chat" },
-                {
-                  icon: "🖼️",
-                  label: "X-Rays & Images",
-                  href: "/doctor/images",
-                },
-                { icon: "📹", label: "Video Call", href: "/video-call" },
-              ].map((a) => (
-                <a
-                  key={a.label}
-                  href={a.href}
-                  className="flex items-center gap-2 p-3 bg-surface-50 hover:bg-dental-50 rounded-xl transition cursor-pointer"
-                >
-                  <span className="text-xl">{a.icon}</span>
-                  <span className="text-sm font-medium text-surface-700">
-                    {a.label}
-                  </span>
-                </a>
-              ))}
+                          : apt.service?.name}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span
+                          className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                            apt.status === "confirmed"
+                              ? "bg-green-100 text-green-700"
+                              : apt.status === "pending"
+                                ? "bg-amber-100 text-amber-700"
+                                : apt.status === "completed"
+                                  ? "bg-blue-100 text-blue-700"
+                                  : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {apt.status === "confirmed"
+                            ? "Xác nhận"
+                            : apt.status === "pending"
+                              ? "Chờ"
+                              : apt.status === "completed"
+                                ? "Hoàn tất"
+                                : "Hủy"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </div>
+          )}
         </div>
       </div>
-    </DashboardLayout>
+    </div>
   );
 }

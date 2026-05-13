@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import DashboardLayout from "../../components/layout/DashboardLayout";
+import DoctorSidebar from "../../components/layout/DoctorSidebar";
 import Table from "../../components/ui/Table";
 import Modal from "../../components/ui/Modal";
 import { recordApi, patientApi } from "../../services/api";
@@ -73,98 +73,103 @@ export default function DoctorRecords() {
   ];
 
   return (
-    <DashboardLayout title="Medical Records">
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
+    <div className="flex">
+      <DoctorSidebar />
+      <div className="flex-1 ml-64">
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between shadow-sm">
           <div>
-            <h2 className="font-display font-bold text-xl text-surface-900">
-              Medical Records
-            </h2>
-            <p className="text-sm text-surface-500">
-              {filtered.length} records
+            <h1 className="text-2xl font-bold text-gray-900">Hồ sơ y tế</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              {filtered.length} hồ sơ
             </p>
           </div>
-          <button onClick={() => setShowForm(true)} className="btn-primary">
-            + New Record
+          <button
+            onClick={() => setShowForm(true)}
+            className="px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition"
+          >
+            + Tạo mới
           </button>
         </div>
 
-        <div className="card">
-          <div className="mb-4">
-            <input
-              className="input max-w-xs"
-              placeholder="Search records..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+        <div className="space-y-4 p-8">
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="mb-4">
+              <input
+                className="w-full max-w-xs px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="Tìm kiếm hồ sơ..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <Table columns={columns} data={filtered} loading={loading} />
           </div>
-          <Table columns={columns} data={filtered} loading={loading} />
         </div>
-      </div>
 
-      <Modal
-        open={showModal}
-        onClose={() => setShowModal(false)}
-        title="Medical Record"
-        size="lg"
-      >
-        {selected && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                ["Patient", selected.patientName],
-                ["Doctor", selected.doctorName],
-                ["Date", selected.date],
-                ["Diagnosis", selected.diagnosis],
-              ].map(([k, v]) => (
-                <div key={k}>
-                  <label className="label">{k}</label>
-                  <p className="text-sm text-surface-800">{v}</p>
+        <Modal
+          open={showModal}
+          onClose={() => setShowModal(false)}
+          title="Medical Record"
+          size="lg"
+        >
+          {selected && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  ["Patient", selected.patientName],
+                  ["Doctor", selected.doctorName],
+                  ["Date", selected.date],
+                  ["Diagnosis", selected.diagnosis],
+                ].map(([k, v]) => (
+                  <div key={k}>
+                    <label className="label">{k}</label>
+                    <p className="text-sm text-surface-800">{v}</p>
+                  </div>
+                ))}
+              </div>
+              <div>
+                <label className="label">Treatment</label>
+                <p className="text-sm text-surface-800">{selected.treatment}</p>
+              </div>
+              {selected.prescription && (
+                <div>
+                  <label className="label">Prescription</label>
+                  <p className="text-sm text-surface-800">
+                    {selected.prescription}
+                  </p>
                 </div>
-              ))}
+              )}
+              {selected.notes && (
+                <div>
+                  <label className="label">Notes</label>
+                  <p className="text-sm text-surface-800">{selected.notes}</p>
+                </div>
+              )}
+              <button
+                onClick={() => setShowModal(false)}
+                className="btn-secondary w-full"
+              >
+                Close
+              </button>
             </div>
-            <div>
-              <label className="label">Treatment</label>
-              <p className="text-sm text-surface-800">{selected.treatment}</p>
-            </div>
-            {selected.prescription && (
-              <div>
-                <label className="label">Prescription</label>
-                <p className="text-sm text-surface-800">
-                  {selected.prescription}
-                </p>
-              </div>
-            )}
-            {selected.notes && (
-              <div>
-                <label className="label">Notes</label>
-                <p className="text-sm text-surface-800">{selected.notes}</p>
-              </div>
-            )}
-            <button
-              onClick={() => setShowModal(false)}
-              className="btn-secondary w-full"
-            >
-              Close
-            </button>
-          </div>
-        )}
-      </Modal>
+          )}
+        </Modal>
 
-      <Modal
-        open={showForm}
-        onClose={() => setShowForm(false)}
-        title="New Medical Record"
-        size="lg"
-      >
-        <RecordForm
-          onClose={() => {
-            setShowForm(false);
-            refetch();
-          }}
-        />
-      </Modal>
-    </DashboardLayout>
+        <Modal
+          open={showForm}
+          onClose={() => setShowForm(false)}
+          title="New Medical Record"
+          size="lg"
+        >
+          <RecordForm
+            onClose={() => {
+              setShowForm(false);
+              refetch();
+            }}
+          />
+        </Modal>
+      </div>
+    </div>
   );
 }
 
