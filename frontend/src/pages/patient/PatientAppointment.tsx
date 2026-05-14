@@ -230,6 +230,10 @@ function BookingForm({
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [conflict, setConflict] = useState<string>("");
+  const { data: appointments } = useApi<Appointment[]>(() =>
+    appointmentApi.getAll(),
+  );
 
   const times = [
     "08:00",
@@ -243,8 +247,54 @@ function BookingForm({
     "17:00",
   ];
 
+  const checkDoctorConflict = (
+    doctorId: string,
+    date: string,
+    time: string,
+  ) => {
+    if (!doctorId || !date || !time) {
+      setConflict("");
+      return;
+    }
+
+    const hasConflict = (appointments || []).some(
+      (apt) =>
+        apt.doctorId === doctorId &&
+        apt.date === date &&
+        apt.time === time &&
+        (apt.status === "confirmed" || apt.status === "pending"),
+    );
+
+    if (hasConflict) {
+      setConflict(
+        `Bác sĩ này đã có lịch khám vào lúc ${time} ngày ${date}. Vui lòng chọn thời gian khác.`,
+      );
+    } else {
+      setConflict("");
+    }
+  };
+
+  const handleDoctorChange = (doctorId: string) => {
+    setForm({ ...form, doctorId });
+    checkDoctorConflict(doctorId, form.date, form.time);
+  };
+
+  const handleDateChange = (date: string) => {
+    setForm({ ...form, date });
+    checkDoctorConflict(form.doctorId, date, form.time);
+  };
+
+  const handleTimeChange = (time: string) => {
+    setForm({ ...form, time });
+    checkDoctorConflict(form.doctorId, form.date, time);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (conflict) {
+      setError("Không thể đặt lịch do bác sĩ đã có lịch trùng");
+      return;
+    }
     setLoading(true);
     setError("");
     try {
@@ -262,6 +312,12 @@ function BookingForm({
       {error && (
         <div className="px-4 py-2 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
           {error}
+        </div>
+      )}
+      {conflict && (
+        <div className="px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-700 flex items-start gap-2">
+          <span className="text-lg">⚠️</span>
+          <span>{conflict}</span>
         </div>
       )}
       <div>
@@ -285,7 +341,7 @@ function BookingForm({
         <select
           className="input"
           value={form.doctorId}
-          onChange={(e) => setForm({ ...form, doctorId: e.target.value })}
+          onChange={(e) => handleDoctorChange(e.target.value)}
           required
         >
           <option value="">Select doctor...</option>
@@ -304,7 +360,7 @@ function BookingForm({
             className="input"
             value={form.date}
             min={new Date().toISOString().split("T")[0]}
-            onChange={(e) => setForm({ ...form, date: e.target.value })}
+            onChange={(e) => handleDateChange(e.target.value)}
             required
           />
         </div>
@@ -313,7 +369,7 @@ function BookingForm({
           <select
             className="input"
             value={form.time}
-            onChange={(e) => setForm({ ...form, time: e.target.value })}
+            onChange={(e) => handleTimeChange(e.target.value)}
           >
             {times.map((t) => (
               <option key={t} value={t}>
@@ -334,7 +390,11 @@ function BookingForm({
         />
       </div>
       <div className="flex gap-3 pt-2">
-        <button type="submit" className="btn-primary flex-1" disabled={loading}>
+        <button
+          type="submit"
+          className="btn-primary flex-1"
+          disabled={loading || !!conflict}
+        >
           {loading ? "Booking..." : "Book Appointment"}
         </button>
         <button
