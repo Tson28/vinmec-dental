@@ -16,6 +16,7 @@ export default function DoctorSidebar() {
     { icon: "📋", label: "Hồ sơ", path: "/doctor/records" },
     { icon: "🖼️", label: "Hình ảnh", path: "/doctor/images" },
     { icon: "💬", label: "Tin nhắn", path: "/doctor/chat" },
+    { icon: "📹", label: "Video Call", path: "/video-call" },
   ];
 
   const handleLogout = () => {

@@ -17,6 +17,7 @@ export default function PatientSidebar() {
     { icon: "🖼️", label: "Hình ảnh", path: "/patient/images" },
     { icon: "🦷", label: "Sức khỏe răng", path: "/patient/dental-score" },
     { icon: "💬", label: "Tin nhắn", path: "/patient/chat" },
+    { icon: "📹", label: "Video Call", path: "/video-call" },
   ];
 
   const handleLogout = () => {
