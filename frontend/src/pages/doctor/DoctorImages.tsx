@@ -21,7 +21,7 @@ export default function DoctorImages() {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<DentalImage | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const [filter, setFilter] = useState("all");
+  const [filter] = useState("all");
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [selectedPatient, setSelectedPatient] = useState("");
@@ -93,7 +93,9 @@ export default function DoctorImages() {
         <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between shadow-sm">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Hình ảnh</h1>
-            <p className="text-sm text-gray-500 mt-1">{filtered.length} hình ảnh</p>
+            <p className="text-sm text-gray-500 mt-1">
+              {filtered.length} hình ảnh
+            </p>
           </div>
           <button
             onClick={() => setShowUploadForm(true)}
