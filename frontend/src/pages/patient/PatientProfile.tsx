@@ -52,10 +52,10 @@ export default function PatientProfile() {
               {user?.name?.charAt(0) || "?"}
             </div>
             <div className="flex-1">
-              <h2 className="text-2xl font-bold text-gray-900">
-                {user?.name}
-              </h2>
-              <span className="inline-block mt-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Bệnh nhân</span>
+              <h2 className="text-2xl font-bold text-gray-900">{user?.name}</h2>
+              <span className="inline-block mt-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+                Bệnh nhân
+              </span>
               <p className="text-sm text-gray-500 mt-1">{user?.email}</p>
             </div>
             <button
@@ -68,108 +68,118 @@ export default function PatientProfile() {
 
           {/* Info */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="font-bold text-gray-900 mb-4">
-              Thông tin cá nhân
-            </h3>
+            <h3 className="font-bold text-gray-900 mb-4">Thông tin cá nhân</h3>
             {editing ? (
               <form onSubmit={handleSave} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Họ tên</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                      Họ tên
+                    </label>
                     <input
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                       value={form.name}
-                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      onChange={(e) =>
+                        setForm({ ...form, name: e.target.value })
+                      }
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                      Email
+                    </label>
                     <input
                       type="email"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                    value={form.email}
-                    onChange={(e) =>
-                      setForm({ ...form, email: e.target.value })
-                    }
-                  />
+                      value={form.email}
+                      onChange={(e) =>
+                        setForm({ ...form, email: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="label">Phone</label>
+                    <input
+                      className="input"
+                      value={form.phone}
+                      onChange={(e) =>
+                        setForm({ ...form, phone: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="label">Date of Birth</label>
+                    <input
+                      type="date"
+                      className="input"
+                      value={form.dob}
+                      onChange={(e) =>
+                        setForm({ ...form, dob: e.target.value })
+                      }
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="label">Phone</label>
-                  <input
-                    className="input"
-                    value={form.phone}
-                    onChange={(e) =>
-                      setForm({ ...form, phone: e.target.value })
-                    }
-                  />
+                <div className="flex gap-3">
+                  <button
+                    type="submit"
+                    className="btn-primary"
+                    disabled={loading}
+                  >
+                    {loading ? "Saving..." : "Save Changes"}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => setEditing(false)}
+                  >
+                    Cancel
+                  </button>
                 </div>
-                <div>
-                  <label className="label">Date of Birth</label>
-                  <input
-                    type="date"
-                    className="input"
-                    value={form.dob}
-                    onChange={(e) => setForm({ ...form, dob: e.target.value })}
-                  />
-                </div>
+              </form>
+            ) : (
+              <div className="grid grid-cols-2 gap-6">
+                {[
+                  { label: "Full Name", value: user?.name },
+                  { label: "Email", value: user?.email },
+                  { label: "Phone", value: user?.phone || "Not provided" },
+                  {
+                    label: "Date of Birth",
+                    value: user?.dob || "Not provided",
+                  },
+                ].map(({ label, value }) => (
+                  <div key={label}>
+                    <p className="label">{label}</p>
+                    <p className="text-sm font-medium text-surface-800">
+                      {value}
+                    </p>
+                  </div>
+                ))}
               </div>
-              <div className="flex gap-3">
-                <button
-                  type="submit"
-                  className="btn-primary"
-                  disabled={loading}
-                >
-                  {loading ? "Saving..." : "Save Changes"}
-                </button>
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  onClick={() => setEditing(false)}
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          ) : (
-            <div className="grid grid-cols-2 gap-6">
+            )}
+          </div>
+
+          {/* Health Summary */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="font-bold text-gray-900 mb-4">Tóm tắt sức khỏe</h3>
+            <div className="grid grid-cols-3 gap-4">
               {[
-                { label: "Full Name", value: user?.name },
-                { label: "Email", value: user?.email },
-                { label: "Phone", value: user?.phone || "Not provided" },
-                { label: "Date of Birth", value: user?.dob || "Not provided" },
-              ].map(({ label, value }) => (
-                <div key={label}>
-                  <p className="label">{label}</p>
-                  <p className="text-sm font-medium text-surface-800">
-                    {value}
-                  </p>
+                { label: "Nhóm máu", value: "O+", icon: "🩸" },
+                { label: "Dị ứng", value: "Không", icon: "⚠️" },
+                { label: "Lần khám cuối", value: "2024-02-15", icon: "📅" },
+              ].map(({ label, value, icon }) => (
+                <div
+                  key={label}
+                  className="bg-gray-50 rounded-lg p-4 text-center"
+                >
+                  <p className="text-2xl mb-2">{icon}</p>
+                  <p className="font-bold text-gray-900 text-sm">{value}</p>
+                  <p className="text-xs text-gray-500">{label}</p>
                 </div>
               ))}
             </div>
-          )}
-        </div>
-
-        {/* Health Summary */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="font-bold text-gray-900 mb-4">Tóm tắt sức khỏe</h3>
-          <div className="grid grid-cols-3 gap-4">
-            {[
-              { label: "Nhóm máu", value: "O+", icon: "🩸" },
-              { label: "Dị ứng", value: "Không", icon: "⚠️" },
-              { label: "Lần khám cuối", value: "2024-02-15", icon: "📅" },
-            ].map(({ label, value, icon }) => (
-              <div
-                key={label}
-                className="bg-gray-50 rounded-lg p-4 text-center"
-              >
-                <p className="text-2xl mb-2">{icon}</p>
-                <p className="font-bold text-gray-900 text-sm">{value}</p>
-                <p className="text-xs text-gray-500">{label}</p>
-              </div>
-            ))}
           </div>
         </div>
-        </div>
+      </div>
     </div>
   );
 }

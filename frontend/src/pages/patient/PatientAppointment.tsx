@@ -81,8 +81,8 @@ export default function PatientAppointment() {
               {(appointments || []).length} lịch hẹn
             </p>
           </div>
-          <button 
-            onClick={() => setShowModal(true)} 
+          <button
+            onClick={() => setShowModal(true)}
             className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition"
           >
             + Đặt lịch
@@ -209,6 +209,11 @@ export default function PatientAppointment() {
         </Modal>
       </div>
     </div>
+  );
+}
+
+function BookingForm({
+  services,
   doctors,
   onClose,
 }: {
