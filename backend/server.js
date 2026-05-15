@@ -3,10 +3,13 @@
 require("dotenv").config();
 
 const express = require("express");
+const http = require("http");
+const { Server: SocketIOServer } = require("socket.io");
 const cors = require("cors");
 const helmet = require("helmet");
 const path = require("path");
 const fs = require("fs");
+const { setupVideoCallSocket } = require("./src/socket/videoCallSocket");
 
 const connectDB = require("./src/config/db");
 const corsOptions = require("./src/config/cors");
@@ -25,7 +28,18 @@ const swaggerDoc = require("./src/config/swagger");
 const { errorHandler, notFound } = require("./src/middleware/errorHandle");
 
 const app = express();
+const server = http.createServer(app);
+const io = new SocketIOServer(server, {
+  cors: {
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
 const PORT = process.env.PORT || 5000;
+
+// Setup WebRTC signaling
+setupVideoCallSocket(io);
 
 // ─── Connect DB ──────────────────────────────────────────────────────────────
 connectDB();
@@ -130,13 +144,14 @@ app.use(notFound);
 app.use(errorHandler);
 
 // ─── Start Server ─────────────────────────────────────────────────────────────
-const server = app.listen(PORT, () => {
+server.listen(PORT, () => {
   // Start background jobs after server is up
   startJobs();
   console.log(`\n🚀 VinaMec API running on port ${PORT}`);
   console.log(`   Mode:     ${process.env.NODE_ENV}`);
   console.log(`   MongoDB:  ${process.env.MONGODB_URI}`);
   console.log(`   Uploads:  ${uploadDir}`);
+  console.log(`   Socket:   WebRTC signaling active`);
   console.log(`   Health:   http://localhost:${PORT}/api/health\n`);
 });
 
@@ -144,6 +159,7 @@ const server = app.listen(PORT, () => {
 process.on("SIGTERM", () => {
   console.log("SIGTERM received – shutting down gracefully");
   stopJobs();
+  io.close();
   server.close(() => {
     console.log("Server closed");
     process.exit(0);

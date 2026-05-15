@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "socket.io-client": "^4.8.3",
-    "webrtc-adapter": "^9.1.0"
+    "socket.io-client": "^4.8.3"
   }
 }
