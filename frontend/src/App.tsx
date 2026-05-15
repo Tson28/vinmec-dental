@@ -208,7 +208,7 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/patient/score"
+        path="/patient/dental-score"
         element={
           <ProtectedRoute allowedRoles={["patient"]}>
             <PatientDentalScore />
