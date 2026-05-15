@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import AdminSidebar from "../../components/layout/AdminSidebar";
+import { useNavigate } from "react-router-dom";
 import { adminApi } from "../../services/api";
 import { Line, Pie } from "react-chartjs-2";
 import {
@@ -26,21 +27,6 @@ ChartJS.register(
   Filler,
   ArcElement,
 );
-
-const MONTH_NAMES = [
-  "T1",
-  "T2",
-  "T3",
-  "T4",
-  "T5",
-  "T6",
-  "T7",
-  "T8",
-  "T9",
-  "T10",
-  "T11",
-  "T12",
-];
 
 interface DashboardData {
   users: {
@@ -70,11 +56,11 @@ interface DashboardData {
 }
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(
     null,
   );
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   useEffect(() => {
     fetchDashboardData();
@@ -85,10 +71,8 @@ export default function AdminDashboard() {
       setLoading(true);
       const response = await adminApi.getDashboard();
       setDashboardData(response.data.data);
-      setError("");
     } catch (err) {
       console.error("Failed to fetch dashboard data:", err);
-      setError("Không thể tải dữ liệu dashboard");
     } finally {
       setLoading(false);
     }
@@ -101,33 +85,33 @@ export default function AdminDashboard() {
     return num.toString();
   };
 
-  // Format currency
-  const formatCurrency = (num: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(num);
-  };
-
   // Chart data for revenue & expenses
   const getRevenueChartData = () => {
     const trend = dashboardData?.analytics?.monthlyAppointmentTrend || [];
 
-    // Use real data if available, otherwise use demo data
-    const labels =
-      trend.length > 0
-        ? trend.map((m) => `T${m._id.month}`)
-        : ["T1", "T2", "T3", "T4", "T5", "T6"];
+    // Create a map of month data
+    const trendMap = new Map();
+    trend.forEach((item) => {
+      if (item._id?.month) {
+        trendMap.set(item._id.month, item.count);
+      }
+    });
 
-    const revenueData =
-      trend.length > 0
-        ? trend.map((m) => m.count * Math.random() * 50)
-        : [50, 75, 60, 80, 90, 100];
+    // Generate labels and data for last 6 months
+    const labels: string[] = [];
+    const revenueData: number[] = [];
+    const expenseData: number[] = [];
 
-    const expenseData =
-      trend.length > 0
-        ? trend.map((m) => m.count * Math.random() * 30)
-        : [20, 30, 25, 35, 40, 45];
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      const month = date.getMonth() + 1;
+      labels.push(`T${month}`);
+
+      const count = trendMap.get(month) || 5;
+      revenueData.push(Math.max(50, count * 8));
+      expenseData.push(Math.max(20, count * 5));
+    }
 
     return {
       labels,
@@ -176,7 +160,10 @@ export default function AdminDashboard() {
       y: {
         beginAtZero: true,
         grid: { color: "#e2e8f0" },
-        ticks: { callback: (v: number) => `${v.toLocaleString("vi-VN")}M` },
+        ticks: {
+          callback: (tickValue: string | number) =>
+            `${Number(tickValue).toLocaleString("vi-VN")}M`,
+        },
       },
       x: { grid: { display: false } },
     },
@@ -294,7 +281,10 @@ export default function AdminDashboard() {
                 Hôm nay, {new Date().toLocaleDateString("vi-VN")}
               </p>
             </div>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors">
+            <button
+              onClick={() => navigate("/admin/reports")}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
+            >
               ⬇️ Xuất báo cáo
             </button>
           </div>

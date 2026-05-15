@@ -11,6 +11,10 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminDoctors from "./pages/admin/AdminDoctors";
 import AdminServices from "./pages/admin/AdminServices";
+import AdminAppointments from "./pages/admin/AdminAppointments";
+import AdminReports from "./pages/admin/AdminReports";
+import AdminSettings from "./pages/admin/AdminSettings";
+import AdminHelp from "./pages/admin/AdminHelp";
 
 // Doctor
 import DoctorDashboard from "./pages/doctor/DoctorDashboard";
@@ -76,6 +80,38 @@ function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["admin"]}>
             <AdminServices />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/appointments"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminAppointments />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/reports"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminReports />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/settings"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminSettings />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/help"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminHelp />
           </ProtectedRoute>
         }
       />

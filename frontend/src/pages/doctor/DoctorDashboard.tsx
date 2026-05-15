@@ -3,7 +3,32 @@ import DoctorSidebar from "../../components/layout/DoctorSidebar";
 import { appointmentApi, patientApi, recordApi } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../hooks/useToast";
+import { Line, Pie } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+  ArcElement,
+} from "chart.js";
 import type { Appointment } from "../../types";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+  ArcElement,
+);
 
 export default function DoctorDashboard() {
   const { user } = useAuth();
@@ -15,6 +40,7 @@ export default function DoctorDashboard() {
   });
   const [upcoming, setUpcoming] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [allAppointments, setAllAppointments] = useState<Appointment[]>([]);
 
   useEffect(() => {
     Promise.allSettled([
@@ -29,6 +55,7 @@ export default function DoctorDashboard() {
       const today = new Date().toISOString().split("T")[0];
       const todayAppts = appts.filter((x: Appointment) => x.date === today);
 
+      setAllAppointments(appts);
       setStats({
         patients:
           p.status === "fulfilled"
@@ -64,11 +91,123 @@ export default function DoctorDashboard() {
     });
   }, [toast]);
 
-  const statusColor: Record<string, string> = {
-    pending: "badge-amber",
-    confirmed: "badge-blue",
-    completed: "badge-green",
-    cancelled: "badge-red",
+  // Chart data for appointment trend
+  const getAppointmentTrendData = () => {
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - i));
+      return date.toISOString().split("T")[0];
+    });
+
+    const appointmentsPerDay = last7Days.map(
+      (day) => allAppointments.filter((apt) => apt.date === day).length,
+    );
+
+    const confirmedPerDay = last7Days.map(
+      (day) =>
+        allAppointments.filter(
+          (apt) => apt.date === day && apt.status === "confirmed",
+        ).length,
+    );
+
+    return {
+      labels: last7Days.map((d) => {
+        const date = new Date(d);
+        return `T${date.getDate()}`;
+      }),
+      datasets: [
+        {
+          label: "Tổng lịch hẹn",
+          data: appointmentsPerDay,
+          fill: true,
+          backgroundColor: "rgba(59, 130, 246, 0.1)",
+          borderColor: "#3b82f6",
+          tension: 0.4,
+          borderWidth: 2,
+          pointRadius: 5,
+          pointBackgroundColor: "#3b82f6",
+          pointBorderColor: "#fff",
+          pointBorderWidth: 2,
+        },
+        {
+          label: "Lịch hẹn xác nhận",
+          data: confirmedPerDay,
+          fill: true,
+          backgroundColor: "rgba(34, 197, 94, 0.1)",
+          borderColor: "#22c55e",
+          tension: 0.4,
+          borderWidth: 2,
+          pointRadius: 5,
+          pointBackgroundColor: "#22c55e",
+          pointBorderColor: "#fff",
+          pointBorderWidth: 2,
+        },
+      ],
+    };
+  };
+
+  const appointmentChartOptions = {
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: {
+      legend: {
+        position: "top" as const,
+        labels: { usePointStyle: true, padding: 15 },
+      },
+      title: { display: false },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: { color: "#e2e8f0" },
+        ticks: { stepSize: 1 },
+      },
+      x: { grid: { display: false } },
+    },
+  };
+
+  // Chart data for service distribution
+  const getServiceChartData = () => {
+    const serviceCount: Record<string, number> = {};
+    allAppointments.forEach((apt) => {
+      const serviceName =
+        typeof apt.service === "string" ? apt.service : apt.service?.name;
+      if (serviceName) {
+        serviceCount[serviceName] = (serviceCount[serviceName] || 0) + 1;
+      }
+    });
+
+    const labels = Object.keys(serviceCount).slice(0, 5);
+    const data = labels.map((label) => serviceCount[label]);
+
+    return {
+      labels,
+      datasets: [
+        {
+          data,
+          backgroundColor: [
+            "#3b82f6",
+            "#14b8a6",
+            "#f59e0b",
+            "#ef4444",
+            "#8b5cf6",
+          ],
+          borderColor: "#fff",
+          borderWidth: 2,
+        },
+      ],
+    };
+  };
+
+  const serviceChartOptions = {
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: {
+      legend: {
+        position: "right" as const,
+        labels: { usePointStyle: true, padding: 20 },
+      },
+    },
   };
 
   return (
@@ -129,6 +268,37 @@ export default function DoctorDashboard() {
               <p className="text-3xl font-bold text-gray-900 mt-2">
                 {loading ? "—" : stats.records}
               </p>
+            </div>
+          </div>
+
+          {/* Charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Appointment Trend Chart */}
+            <div className="lg:col-span-2 bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-2">
+                Xu hướng lịch hẹn
+              </h3>
+              <p className="text-xs text-gray-500 mb-4">7 ngày gần nhất</p>
+              <div style={{ height: "300px" }}>
+                <Line
+                  data={getAppointmentTrendData()}
+                  options={appointmentChartOptions}
+                />
+              </div>
+            </div>
+
+            {/* Service Distribution Chart */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-2">
+                Phân bổ dịch vụ
+              </h3>
+              <p className="text-xs text-gray-500 mb-4">Top 5 dịch vụ</p>
+              <div style={{ height: "300px" }}>
+                <Pie
+                  data={getServiceChartData()}
+                  options={serviceChartOptions}
+                />
+              </div>
             </div>
           </div>
 
