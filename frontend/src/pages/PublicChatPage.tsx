@@ -23,6 +23,7 @@ export default function PublicChatPage() {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content:
+          res.data?.data?.reply ||
           res.data?.reply ||
           res.data?.message ||
           "Thank you for your question. For detailed dental advice, please consult one of our doctors.",

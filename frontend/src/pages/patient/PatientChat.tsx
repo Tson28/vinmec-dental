@@ -170,6 +170,7 @@ export default function PatientChat() {
           newHistory.map((h) => ({ role: h.role, content: h.content })),
         );
         const aiResponse =
+          res.data?.data?.reply ||
           res.data?.reply ||
           "Xin lỗi, tôi không thể trả lời câu hỏi này. Vui lòng thử lại.";
 
