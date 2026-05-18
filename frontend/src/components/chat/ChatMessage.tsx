@@ -228,7 +228,7 @@ export default function ChatMessage({
               </div>
 
               <div
-                className={`rounded-2xl px-4 py-2.5 ${msg.isOwn ? "bg-dental-600 text-black rounded-br-none" : "bg-surface-100 text-black rounded-bl-none"}`}
+                className={`rounded-2xl px-4 py-2.5 ${msg.isOwn ? "bg-dental-600 text-black rounded-br-none" : "bg-surface-100 text-surface-900-black rounded-bl-none"}`}
               >
                 {msg.type === "text" && (
                   <p className="text-sm break-words">{msg.content}</p>
@@ -325,26 +325,26 @@ export default function ChatMessage({
 
       {/* Image Preview */}
       {imagePreview && (
-        <div className="px-4 py-2 border-t border-surface-100 bg-surface-50 flex items-center gap-3">
+        <div className="px-4 py-3 border-t border-surface-100 bg-surface-50 flex items-center gap-3">
           <div className="relative">
             <img
               src={imagePreview}
               alt="preview"
-              className="h-16 w-16 object-cover rounded-lg"
+              className="h-14 w-14 object-cover rounded-lg"
             />
             <button
               onClick={() => setImagePreview(null)}
-              className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs"
+              className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
             >
               ✕
             </button>
           </div>
           <div className="flex-1">
             <p className="text-xs font-medium text-surface-600">
-              Image ready to send
+              Sẵn sàng gửi hình ảnh
             </p>
             <p className="text-xs text-surface-400">
-              Click send to share this image
+              Nhấn gửi để chia sẻ hình ảnh này
             </p>
           </div>
         </div>
@@ -352,25 +352,25 @@ export default function ChatMessage({
 
       {/* Recording Indicator */}
       {isRecording && (
-        <div className="px-4 py-3 border-t border-surface-100 bg-red-50 flex items-center gap-3">
+        <div className="px-4 py-3 border-t border-surface-100 bg-red-50 flex items-center gap-3 animate-pulse">
           <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
           <span className="text-sm font-medium text-red-600">
-            Recording... {formatTime(recordingTime)}
+            Đang ghi âm... {formatTime(recordingTime)}
           </span>
         </div>
       )}
 
       {/* Input Area */}
       <div className="px-4 py-3 border-t border-surface-100 bg-white">
-        <div className="flex gap-2 items-end">
+        <div className="flex gap-2 items-end rounded-full bg-surface-50 px-3 py-2 hover:bg-surface-100 transition">
           {/* Image Upload Button */}
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-100 transition text-dental-600"
+            className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-surface-200 transition text-dental-600 flex-shrink-0"
             title="Upload image"
           >
             <svg
-              className="w-6 h-6"
+              className="w-5 h-5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -396,9 +396,9 @@ export default function ChatMessage({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={placeholder || "Type a message..."}
+            placeholder={placeholder || "Nhắn..."}
             rows={1}
-            className="input resize-none flex-1 min-h-[40px] max-h-24 overflow-y-auto"
+            className="input resize-none flex-1 min-h-[36px] max-h-24 overflow-y-auto bg-surface-50 border-0 px-2 py-1 text-sm focus:outline-none"
           />
 
           {/* Voice Record Button */}
@@ -407,10 +407,10 @@ export default function ChatMessage({
             onMouseUp={stopRecording}
             onTouchStart={startRecording}
             onTouchEnd={stopRecording}
-            className={`flex items-center justify-center w-10 h-10 rounded-full transition ${
+            className={`flex items-center justify-center w-9 h-9 rounded-full transition flex-shrink-0 ${
               isRecording
                 ? "bg-red-500 text-white"
-                : "hover:bg-surface-100 text-dental-600"
+                : "hover:bg-surface-200 text-dental-600"
             }`}
             title="Hold to record voice message"
           >
@@ -435,20 +435,10 @@ export default function ChatMessage({
               }
             }}
             disabled={(!input.trim() && !imagePreview) || loading}
-            className="flex items-center justify-center w-10 h-10 rounded-full bg-dental-600 text-white hover:bg-dental-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            className="flex items-center justify-center w-9 h-9 rounded-full bg-dental-600 text-white hover:bg-dental-700 disabled:bg-surface-300 disabled:cursor-not-allowed transition flex-shrink-0"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-              />
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M16.6915026,12.4744748 L3.50612381,13.2599618 C3.19218622,13.2599618 3.03521743,13.4170592 3.03521743,13.5741566 L1.15159189,20.0151496 C0.8376543,20.8006365 0.99,21.89 1.77946707,22.52 C2.41,22.99 3.50612381,23.1 4.13399899,22.8429026 L21.714504,14.0454487 C22.6563168,13.5741566 23.1272231,12.6315722 22.9702544,11.6889879 L4.13399899,1.16346273 C3.34915502,0.9 2.40734225,1.00636533 1.77946707,1.4776575 C0.994623095,2.10604706 0.837654326,3.0486314 1.15159189,3.99621575 L3.03521743,10.4371816 C3.03521743,10.5942789 3.34915502,10.7513763 3.50612381,10.7513763 L16.6915026,11.5368631 C16.6915026,11.5368631 17.1624089,11.5368631 17.1624089,12.0080553 C17.1624089,12.4744748 16.6915026,12.4744748 16.6915026,12.4744748 Z" />
             </svg>
           </button>
         </div>
