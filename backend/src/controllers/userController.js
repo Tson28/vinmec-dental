@@ -1,10 +1,10 @@
-'use strict';
+"use strict";
 
-const User = require('../models/User');
-const { sendSuccess, sendError, sendPaginated } = require('../utils/response');
-const { getPagination, buildSort } = require('../utils/pagination');
+const User = require("../models/User");
+const { sendSuccess, sendError, sendPaginated } = require("../utils/response");
+const { getPagination, buildSort } = require("../utils/pagination");
 
-const ALLOWED_SORT = ['name', 'email', 'role', 'createdAt'];
+const ALLOWED_SORT = ["name", "email", "role", "createdAt"];
 
 // GET /api/users  [admin]
 const getAll = async (req, res) => {
@@ -16,8 +16,8 @@ const getAll = async (req, res) => {
     if (req.query.role) filter.role = req.query.role;
     if (req.query.search) {
       filter.$or = [
-        { name: { $regex: req.query.search, $options: 'i' } },
-        { email: { $regex: req.query.search, $options: 'i' } },
+        { name: { $regex: req.query.search, $options: "i" } },
+        { email: { $regex: req.query.search, $options: "i" } },
       ];
     }
 
@@ -36,8 +36,8 @@ const getAll = async (req, res) => {
 const getById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
-    if (!user) return sendError(res, 404, 'User not found.');
-    return sendSuccess(res, 200, 'User retrieved', user);
+    if (!user) return sendError(res, 404, "User not found.");
+    return sendSuccess(res, 200, "User retrieved", user);
   } catch (err) {
     return sendError(res, 500, err.message);
   }
@@ -47,12 +47,18 @@ const getById = async (req, res) => {
 const create = async (req, res) => {
   try {
     const existing = await User.findOne({ email: req.body.email });
-    if (existing) return sendError(res, 409, 'Email already exists.');
+    if (existing) return sendError(res, 409, "Email already exists.");
 
     const user = await User.create(req.body);
-    return sendSuccess(res, 201, 'User created', user);
+    return sendSuccess(res, 201, "User created", user);
   } catch (err) {
-    if (err.code === 11000) return sendError(res, 409, 'Email already exists.');
+    // Handle Mongoose validation errors
+    if (err.name === "ValidationError") {
+      const messages = Object.values(err.errors).map((e) => e.message);
+      return sendError(res, 400, messages.join(", "));
+    }
+    // Handle duplicate key error
+    if (err.code === 11000) return sendError(res, 409, "Email already exists.");
     return sendError(res, 500, err.message);
   }
 };
@@ -64,11 +70,19 @@ const update = async (req, res) => {
     delete req.body.password;
 
     const user = await User.findByIdAndUpdate(req.params.id, req.body, {
-      new: true, runValidators: true,
+      new: true,
+      runValidators: true,
     });
-    if (!user) return sendError(res, 404, 'User not found.');
-    return sendSuccess(res, 200, 'User updated', user);
+    if (!user) return sendError(res, 404, "User not found.");
+    return sendSuccess(res, 200, "User updated", user);
   } catch (err) {
+    // Handle Mongoose validation errors
+    if (err.name === "ValidationError") {
+      const messages = Object.values(err.errors).map((e) => e.message);
+      return sendError(res, 400, messages.join(", "));
+    }
+    // Handle duplicate key error
+    if (err.code === 11000) return sendError(res, 409, "Email already exists.");
     return sendError(res, 500, err.message);
   }
 };
@@ -77,11 +91,11 @@ const update = async (req, res) => {
 const remove = async (req, res) => {
   try {
     if (req.params.id === req.user._id.toString()) {
-      return sendError(res, 400, 'Cannot delete your own account.');
+      return sendError(res, 400, "Cannot delete your own account.");
     }
     const user = await User.findByIdAndDelete(req.params.id);
-    if (!user) return sendError(res, 404, 'User not found.');
-    return sendSuccess(res, 200, 'User deleted');
+    if (!user) return sendError(res, 404, "User not found.");
+    return sendSuccess(res, 200, "User deleted");
   } catch (err) {
     return sendError(res, 500, err.message);
   }
@@ -91,10 +105,15 @@ const remove = async (req, res) => {
 const toggleActive = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
-    if (!user) return sendError(res, 404, 'User not found.');
+    if (!user) return sendError(res, 404, "User not found.");
     user.isActive = !user.isActive;
     await user.save();
-    return sendSuccess(res, 200, `User ${user.isActive ? 'activated' : 'deactivated'}`, user);
+    return sendSuccess(
+      res,
+      200,
+      `User ${user.isActive ? "activated" : "deactivated"}`,
+      user,
+    );
   } catch (err) {
     return sendError(res, 500, err.message);
   }

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import DoctorSidebar from "../../components/layout/DoctorSidebar";
+import DentalScoreModal from "../../components/DentalScoreModal";
 import Table from "../../components/ui/Table";
 import { patientApi } from "../../services/api";
 import { useApi } from "../../hooks/useApi";
@@ -8,6 +9,8 @@ import type { User } from "../../types";
 export default function DoctorPatients() {
   const { data: patients, loading } = useApi<User[]>(() => patientApi.getAll());
   const [search, setSearch] = useState("");
+  const [selectedPatient, setSelectedPatient] = useState<User | null>(null);
+  const [showScoreModal, setShowScoreModal] = useState(false);
 
   const filtered = (patients || []).filter(
     (p) =>
@@ -37,6 +40,21 @@ export default function DoctorPatients() {
       key: "status",
       header: "Status",
       render: () => <span className="badge badge-green">Active</span>,
+    },
+    {
+      key: "actions",
+      header: "Actions",
+      render: (p: User) => (
+        <button
+          onClick={() => {
+            setSelectedPatient(p);
+            setShowScoreModal(true);
+          }}
+          className="px-3 py-1.5 text-sm bg-gradient-dental text-white rounded-lg hover:opacity-90 transition font-medium"
+        >
+          Dental Score
+        </button>
+      ),
     },
   ];
 
@@ -68,6 +86,18 @@ export default function DoctorPatients() {
           </div>
         </div>
       </div>
+
+      {/* Dental Score Modal */}
+      {selectedPatient && (
+        <DentalScoreModal
+          patient={selectedPatient}
+          isOpen={showScoreModal}
+          onClose={() => {
+            setShowScoreModal(false);
+            setSelectedPatient(null);
+          }}
+        />
+      )}
     </div>
   );
 }

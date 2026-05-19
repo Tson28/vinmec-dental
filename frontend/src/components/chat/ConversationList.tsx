@@ -59,11 +59,28 @@ export default function ConversationList({
     try {
       const res = await conversationApi.getAvailableUsers();
       const users = res.data?.data || res.data || [];
-      setAvailableUsers(Array.isArray(users) ? users : []);
+
+      // Ensure we have an array
+      if (!Array.isArray(users)) {
+        console.warn("Unexpected response format for available users:", res);
+        toast.error("Invalid response from server");
+        setAvailableUsers([]);
+        return;
+      }
+
+      if (users.length === 0) {
+        toast.info("No available users to chat with");
+      }
+
+      setAvailableUsers(users);
       setShowUserList(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to load users:", error);
-      toast.error("Failed to load users");
+      const errorMsg =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to load users";
+      toast.error(errorMsg);
     } finally {
       setLoadingUsers(false);
     }
@@ -189,8 +206,22 @@ export default function ConversationList({
                   </button>
                 ))
               ) : (
-                <div className="text-center py-8 text-surface-500 text-sm">
-                  {searchTerm ? "No users found" : "No available users"}
+                <div className="text-center py-8 text-surface-500 text-sm px-4">
+                  {loadingUsers ? (
+                    <>
+                      <div className="w-6 h-6 border-2 border-dental-400 border-t-dental-600 rounded-full animate-spin mx-auto mb-2" />
+                      <p>Loading users...</p>
+                    </>
+                  ) : searchTerm ? (
+                    <p>No users found matching "{searchTerm}"</p>
+                  ) : (
+                    <>
+                      <p className="font-medium mb-1">No available users</p>
+                      <p className="text-xs">
+                        Check back later when other users are available
+                      </p>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -262,9 +293,10 @@ export default function ConversationList({
             </p>
             <button
               onClick={loadAvailableUsers}
+              disabled={loadingUsers}
               className="btn-primary text-sm"
             >
-              Start chatting
+              {loadingUsers ? "Loading..." : "Start chatting"}
             </button>
           </div>
         )}

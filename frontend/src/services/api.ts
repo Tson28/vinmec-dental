@@ -128,6 +128,11 @@ export const serviceApi = {
 export const scoreApi = {
   getMine: () => api.get("/scores/me"),
   getByPatient: (id: string) => api.get(`/scores/patient/${id}`),
+  updateScore: (id: string, data: object) =>
+    api.put(`/scores/patient/${id}`, data),
+  editScore: (id: string, data: object) =>
+    api.post(`/scores/patient/${id}/edit`, data),
+  getEditHistory: (id: string) => api.get(`/scores/patient/${id}/edit-history`),
 };
 
 // ─── Chat ────────────────────────────────────────────────────────────────────

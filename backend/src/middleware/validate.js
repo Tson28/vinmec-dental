@@ -1,4 +1,4 @@
-const { sendError } = require('../utils/response');
+const { sendError } = require("../utils/response");
 
 /**
  * Joi validation middleware factory
@@ -8,20 +8,41 @@ const validate = (schema) => (req, res, next) => {
   const errors = [];
 
   if (schema.body) {
-    const { error } = schema.body.validate(req.body, { abortEarly: false });
-    if (error) errors.push(...error.details.map(d => d.message));
+    const { error, value } = schema.body.validate(req.body, {
+      abortEarly: false,
+      convert: true,
+      stripUnknown: false,
+    });
+    if (error) {
+      console.error("[Validation Error] Body validation failed");
+      console.error(
+        "Details:",
+        error.details.map((d) => ({ message: d.message, key: d.context.key })),
+      );
+      console.error("Received body:", req.body);
+      errors.push(...error.details.map((d) => d.message));
+    } else {
+      // Use the validated value (with defaults applied)
+      req.body = value;
+    }
   }
   if (schema.query) {
-    const { error } = schema.query.validate(req.query, { abortEarly: false });
-    if (error) errors.push(...error.details.map(d => d.message));
+    const { error } = schema.query.validate(req.query, {
+      abortEarly: false,
+      convert: true,
+    });
+    if (error) errors.push(...error.details.map((d) => d.message));
   }
   if (schema.params) {
-    const { error } = schema.params.validate(req.params, { abortEarly: false });
-    if (error) errors.push(...error.details.map(d => d.message));
+    const { error } = schema.params.validate(req.params, {
+      abortEarly: false,
+      convert: true,
+    });
+    if (error) errors.push(...error.details.map((d) => d.message));
   }
 
   if (errors.length > 0) {
-    return sendError(res, 422, 'Validation failed', { errors });
+    return sendError(res, 422, "Validation failed", { errors });
   }
 
   next();
