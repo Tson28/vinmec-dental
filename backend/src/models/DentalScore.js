@@ -1,16 +1,41 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const scoreEntrySchema = new mongoose.Schema({
-  date: { type: String, required: true },
-  score: { type: Number, required: true, min: 0, max: 100 },
-  notes: { type: String },
-}, { _id: false });
+const scoreEntrySchema = new mongoose.Schema(
+  {
+    date: { type: String, required: true },
+    score: { type: Number, required: true, min: 0, max: 100 },
+    notes: { type: String },
+  },
+  { _id: false },
+);
+
+const editHistorySchema = new mongoose.Schema(
+  {
+    editedAt: { type: Date, default: Date.now },
+    editedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    doctorName: { type: String },
+    changes: {
+      overall: { oldValue: Number, newValue: Number },
+      gumHealth: { oldValue: Number, newValue: Number },
+      toothDecay: { oldValue: Number, newValue: Number },
+      alignment: { oldValue: Number, newValue: Number },
+      cleanliness: { oldValue: Number, newValue: Number },
+      recommendations: { oldValue: [String], newValue: [String] },
+      nextCheckupDate: { oldValue: String, newValue: String },
+    },
+    reason: { type: String },
+  },
+  { _id: true },
+);
 
 const dentalScoreSchema = new mongoose.Schema(
   {
     patient: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
       unique: true,
     },
@@ -23,14 +48,14 @@ const dentalScoreSchema = new mongoose.Schema(
     history: [scoreEntrySchema],
     lastAssessedBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
     },
     lastAssessedAt: { type: Date },
     nextCheckupDate: { type: String },
     recommendations: [{ type: String }],
+    editHistory: [editHistorySchema],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-
-module.exports = mongoose.model('DentalScore', dentalScoreSchema);
+module.exports = mongoose.model("DentalScore", dentalScoreSchema);
