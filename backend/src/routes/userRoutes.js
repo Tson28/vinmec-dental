@@ -20,7 +20,7 @@ const createUserSchema = {
   body: Joi.object({
     name: Joi.string().min(2).max(100).required(),
     email: Joi.string().email().required(),
-    password: Joi.string().min(6).required(),
+    password: Joi.string().min(6).default("Password@123"),
     role: Joi.string().valid("admin", "doctor", "patient").default("patient"),
     phone: Joi.string()
       .pattern(/^[0-9+\-\s()]{7,20}$/)

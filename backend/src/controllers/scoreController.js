@@ -2,8 +2,23 @@
 
 const DentalScore = require("../models/DentalScore");
 const User = require("../models/User");
+const Patient = require("../models/Patient");
 const { sendSuccess, sendError, sendPaginated } = require("../utils/response");
 const { getPagination } = require("../utils/pagination");
+
+// Helper to resolve User ID from either User ID or Patient ID
+const resolveUserId = async (patientIdOrUserId) => {
+  // Try to find as User first
+  let user = await User.findById(patientIdOrUserId);
+  if (user) return user;
+
+  // Try to find as Patient
+  const patient = await Patient.findById(patientIdOrUserId);
+  if (patient) {
+    return await User.findById(patient.user);
+  }
+  return null;
+};
 
 // GET /api/scores/me  [patient]
 const getMine = async (req, res) => {
@@ -59,12 +74,35 @@ const getAll = async (req, res) => {
 // GET /api/scores/patient/:patientId  [doctor, admin]
 const getByPatient = async (req, res) => {
   try {
-    const score = await DentalScore.findOne({ patient: req.params.patientId })
+    const { patientId } = req.params;
+    const user = await resolveUserId(patientId);
+    if (!user) {
+      return sendError(res, 404, "Patient not found.");
+    }
+
+    let score = await DentalScore.findOne({ patient: user._id })
       .populate("patient", "name email")
       .populate("lastAssessedBy", "name specialization");
 
-    if (!score)
-      return sendError(res, 404, "Dental score not found for this patient.");
+    if (!score) {
+      // Auto-create a default score of 70
+      score = await DentalScore.create({
+        patient: user._id,
+        patientName: user.name,
+        overall: 70,
+        gumHealth: 70,
+        toothDecay: 70,
+        alignment: 70,
+        cleanliness: 70,
+        history: [{ date: new Date().toISOString().split("T")[0], score: 70 }],
+      });
+
+      // Populate relationships
+      await score.populate([
+        { path: "patient", select: "name email" }
+      ]);
+    }
+
     return sendSuccess(res, 200, "Dental score retrieved", score);
   } catch (err) {
     return sendError(res, 500, err.message);
@@ -87,16 +125,16 @@ const updateScore = async (req, res) => {
       reason,
     } = req.body;
 
-    const patient = await User.findById(patientId);
+    const patient = await resolveUserId(patientId);
     if (!patient || patient.role !== "patient") {
       return sendError(res, 404, "Patient not found.");
     }
 
-    let score = await DentalScore.findOne({ patient: patientId });
+    let score = await DentalScore.findOne({ patient: patient._id });
 
     if (!score) {
       score = new DentalScore({
-        patient: patientId,
+        patient: patient._id,
         patientName: patient.name,
       });
     }
@@ -204,16 +242,16 @@ const editScore = async (req, res) => {
       reason,
     } = req.body;
 
-    const patient = await User.findById(patientId);
+    const patient = await resolveUserId(patientId);
     if (!patient || patient.role !== "patient") {
       return sendError(res, 404, "Patient not found.");
     }
 
-    let score = await DentalScore.findOne({ patient: patientId });
+    let score = await DentalScore.findOne({ patient: patient._id });
 
     if (!score) {
       score = new DentalScore({
-        patient: patientId,
+        patient: patient._id,
         patientName: patient.name,
       });
     }
@@ -309,7 +347,12 @@ const editScore = async (req, res) => {
 const getEditHistory = async (req, res) => {
   try {
     const { patientId } = req.params;
-    const score = await DentalScore.findOne({ patient: patientId }).populate(
+    const patient = await resolveUserId(patientId);
+    if (!patient) {
+      return sendError(res, 404, "Patient not found.");
+    }
+
+    const score = await DentalScore.findOne({ patient: patient._id }).populate(
       "editHistory.editedBy",
       "name specialization",
     );
@@ -320,7 +363,7 @@ const getEditHistory = async (req, res) => {
 
     const editHistory = score.editHistory || [];
     return sendSuccess(res, 200, "Edit history retrieved", {
-      patient: patientId,
+      patient: patient._id,
       patientName: score.patientName,
       editHistory: editHistory.sort((a, b) => b.editedAt - a.editedAt),
     });
