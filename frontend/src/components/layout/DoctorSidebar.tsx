@@ -6,8 +6,12 @@ export default function DoctorSidebar() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(true);
 
-  const isActive = (path: string) =>
-    location.pathname === path || location.pathname.startsWith(path + "/");
+  const isActive = (path: string) => {
+    if (path === "/doctor") {
+      return location.pathname === "/doctor";
+    }
+    return location.pathname === path || location.pathname.startsWith(path + "/");
+  };
 
   const menuItems = [
     { icon: "📊", label: "Dashboard", path: "/doctor" },

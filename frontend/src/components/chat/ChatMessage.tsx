@@ -435,10 +435,15 @@ export default function ChatMessage({
               }
             }}
             disabled={(!input.trim() && !imagePreview) || loading}
-            className="flex items-center justify-center w-9 h-9 rounded-full bg-dental-600 text-white hover:bg-dental-700 disabled:bg-surface-300 disabled:cursor-not-allowed transition flex-shrink-0"
+            className={`flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 flex-shrink-0 shadow-sm border cursor-pointer ${
+              (!input.trim() && !imagePreview) || loading
+                ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                : "bg-dental-600 hover:bg-dental-700 text-white border-dental-600 hover:shadow active:scale-95"
+            }`}
+            title="Gửi tin nhắn"
           >
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M16.6915026,12.4744748 L3.50612381,13.2599618 C3.19218622,13.2599618 3.03521743,13.4170592 3.03521743,13.5741566 L1.15159189,20.0151496 C0.8376543,20.8006365 0.99,21.89 1.77946707,22.52 C2.41,22.99 3.50612381,23.1 4.13399899,22.8429026 L21.714504,14.0454487 C22.6563168,13.5741566 23.1272231,12.6315722 22.9702544,11.6889879 L4.13399899,1.16346273 C3.34915502,0.9 2.40734225,1.00636533 1.77946707,1.4776575 C0.994623095,2.10604706 0.837654326,3.0486314 1.15159189,3.99621575 L3.03521743,10.4371816 C3.03521743,10.5942789 3.34915502,10.7513763 3.50612381,10.7513763 L16.6915026,11.5368631 C16.6915026,11.5368631 17.1624089,11.5368631 17.1624089,12.0080553 C17.1624089,12.4744748 16.6915026,12.4744748 16.6915026,12.4744748 Z" />
+            <svg className="w-5 h-5 transform rotate-45 -translate-x-0.5 -translate-y-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
             </svg>
           </button>
         </div>

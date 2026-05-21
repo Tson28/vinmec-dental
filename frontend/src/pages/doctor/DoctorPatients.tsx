@@ -43,16 +43,16 @@ export default function DoctorPatients() {
     },
     {
       key: "actions",
-      header: "Actions",
+      header: "Hành động",
       render: (p: User) => (
         <button
           onClick={() => {
             setSelectedPatient(p);
             setShowScoreModal(true);
           }}
-          className="px-3 py-1.5 text-sm bg-gradient-dental text-white rounded-lg hover:opacity-90 transition font-medium"
+          className="px-4 py-2 text-xs bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 active:scale-95 flex items-center gap-1.5 justify-center cursor-pointer"
         >
-          Dental Score
+          🦷 Xem chỉ số răng
         </button>
       ),
     },
@@ -82,7 +82,7 @@ export default function DoctorPatients() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <Table columns={columns} data={filtered} loading={loading} />
+            <Table columns={columns} data={filtered} loading={loading} keyField="_id" />
           </div>
         </div>
       </div>

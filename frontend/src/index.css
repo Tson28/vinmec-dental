@@ -1,5 +1,65 @@
 @import "tailwindcss";
 
+@theme {
+  --color-dental-50: #f0f9ff;
+  --color-dental-100: #e0f2fe;
+  --color-dental-200: #b9e8fd;
+  --color-dental-300: #7dd4fc;
+  --color-dental-400: #38bdf8;
+  --color-dental-500: #0ea5e9;
+  --color-dental-600: #0284c7;
+  --color-dental-700: #0369a1;
+  --color-dental-800: #075985;
+  --color-dental-900: #0c4a6e;
+
+  --color-mint-50: #f0fdf9;
+  --color-mint-100: #ccfbef;
+  --color-mint-200: #99f6e0;
+  --color-mint-300: #5eead4;
+  --color-mint-400: #2dd4bf;
+  --color-mint-500: #14b8a6;
+  --color-mint-600: #0d9488;
+  --color-mint-700: #0f766e;
+  --color-mint-800: #115e59;
+  --color-mint-900: #134e4a;
+
+  --color-surface-50: #f8fafc;
+  --color-surface-100: #f1f5f9;
+  --color-surface-200: #e2e8f0;
+  --color-surface-300: #cbd5e1;
+  --color-surface-400: #94a3b8;
+  --color-surface-500: #64748b;
+  --color-surface-600: #475569;
+  --color-surface-700: #334155;
+  --color-surface-800: #1e293b;
+  --color-surface-900: #0f172a;
+
+  --font-sans: "Outfit", sans-serif;
+  --font-display: "Playfair Display", serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  --shadow-card: 0 1px 3px 0 rgba(0,0,0,.04), 0 4px 16px 0 rgba(0,0,0,.06);
+  --shadow-card-hover: 0 4px 6px -1px rgba(0,0,0,.06), 0 12px 32px -4px rgba(14,165,233,.18);
+  --shadow-glow: 0 0 24px rgba(14,165,233,.35);
+
+  --background-image-gradient-dental: linear-gradient(135deg, #0ea5e9 0%, #14b8a6 100%);
+  --background-image-gradient-dark: linear-gradient(135deg, #0c4a6e 0%, #134e4a 100%);
+
+  --animate-fade-in: fadeIn .4s ease both;
+  --animate-slide-up: slideUp .4s ease both;
+  --animate-pulse-slow: pulse 3s cubic-bezier(.4,0,.6,1) infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @layer base {
   * {
     box-sizing: border-box;
