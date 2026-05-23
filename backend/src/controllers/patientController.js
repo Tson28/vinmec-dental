@@ -10,6 +10,7 @@ const ALLOWED_SORT = ["name", "email", "createdAt"];
 // GET /api/patients  [admin, doctor]
 const getAll = async (req, res) => {
   try {
+    console.log("[PATIENT GETALL] user:", req.user?._id, req.user?.role);
     const { page, limit, skip } = getPagination(req.query);
     const sort = buildSort(req.query, ALLOWED_SORT);
     const filter = { isActive: true };
@@ -32,8 +33,10 @@ const getAll = async (req, res) => {
       Patient.countDocuments(filter),
     ]);
 
+    console.log("[PATIENT GETALL] found:", patients.length, "total:", total);
     return sendPaginated(res, patients, total, page, limit);
   } catch (err) {
+    console.error("[PATIENT GETALL] ERROR:", err);
     return sendError(res, 500, err.message);
   }
 };
@@ -55,11 +58,17 @@ const getMyProfile = async (req, res) => {
 // GET /api/patients/:id  [admin, doctor, or self]
 const getById = async (req, res) => {
   try {
+    console.log("[PATIENT GETBYID] params.id:", req.params.id);
     const patient = await Patient.findById(req.params.id)
       .populate("user", "name email role lastLogin")
       .populate("assignedDoctor", "name specialization");
 
-    if (!patient) return sendError(res, 404, "Patient not found.");
+    if (!patient) {
+      console.log("[PATIENT GETBYID] Not found for id:", req.params.id);
+      return sendError(res, 404, "Patient not found.");
+    }
+
+    console.log("[PATIENT GETBYID] Found:", patient._id, "user:", patient.user?._id || patient.user);
 
     // Patient can only view own profile
     if (
@@ -75,6 +84,7 @@ const getById = async (req, res) => {
 
     return sendSuccess(res, 200, "Patient retrieved", patient);
   } catch (err) {
+    console.error("[PATIENT GETBYID] ERROR:", err.message, err.stack);
     return sendError(res, 500, err.message);
   }
 };

@@ -22,10 +22,12 @@ export interface AuthState {
 export interface Appointment {
   id: string;
   patientId: string;
+  patient?: { _id: string; name: string; email: string };
   patientName: string;
   doctorId: string;
   doctorName: string;
   service: Service | string;
+  serviceName?: string;
   date: string;
   time: string;
   status:
@@ -41,6 +43,8 @@ export interface Appointment {
   rejectionReason?: string;
   approvedBy?: string;
   approvedAt?: string;
+  fee?: number;
+  isPaid?: boolean;
 }
 
 export interface MedicalRecord {
@@ -54,6 +58,8 @@ export interface MedicalRecord {
   prescription?: string;
   date: string;
   notes?: string;
+  status?: "completed" | "pending" | "followup";
+  type?: "examination" | "treatment" | "surgery" | "checkup";
 }
 
 export interface DentalImage {
@@ -89,9 +95,25 @@ export interface DentalScore {
 
 export interface ChatMessage {
   id: string;
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "ai";
   content: string;
+  timestamp?: string;
+}
+
+export interface ChatMessageFull {
+  id: string;
+  sender: {
+    id: string;
+    name: string;
+    avatar?: string;
+  };
+  type: "text" | "image" | "audio";
+  content?: string;
+  imageUrl?: string;
+  audioUrl?: string;
+  audioName?: string;
   timestamp: string;
+  isOwn?: boolean;
 }
 
 export interface ApiResponse<T> {
