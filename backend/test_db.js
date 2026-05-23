@@ -1,13 +1,12 @@
+require('dotenv').config();
+console.log("ENV =", process.env.MONGO_URI);
 const mongoose = require('mongoose');
 const Patient = require('./src/models/Patient');
 const User = require('./src/models/User');
 const DentalScore = require('./src/models/DentalScore');
 
 async function check() {
-  await mongoose.connect('mongodb://localhost:27017/vinamec_dental');
-  console.log('Connected');
-  const patientId = '69f8c39834a9809bb7e70b2e';
-  const patient = await Patient.findById(patientId);
+  mongoose.connect(process.env.MONGO_URI)
   console.log('Patient:', patient);
   const userDirect = await User.findById(patientId);
   console.log('User direct:', userDirect);
