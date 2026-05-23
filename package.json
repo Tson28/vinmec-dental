@@ -1,4 +1,9 @@
 {
+  "name": "vinmec-dental-root",
+  "private": true,
+  "scripts": {
+    "build": "cd frontend && npm run build"
+  },
   "dependencies": {
     "socket.io-client": "^4.8.3"
   }
