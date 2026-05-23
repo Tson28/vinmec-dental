@@ -36,9 +36,10 @@ const io = new SocketIOServer(server, {
     credentials: true,
   },
 });
-const PORT = process.env.PORT || 5000;
-
-// Setup WebRTC signaling
+server.listen(PORT, '0.0.0.0', () => {
+  startJobs();
+  console.log(`🚀 Server running on port ${PORT}`);
+});// Setup WebRTC signaling
 setupVideoCallSocket(io);
 
 // ─── Connect DB ──────────────────────────────────────────────────────────────
