@@ -31,7 +31,12 @@ const app = express();
 const server = http.createServer(app);
 const io = new SocketIOServer(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: [
+      process.env.CLIENT_URL || "http://localhost:5173",
+      "https://vinmec-dental.vercel.app",
+      "https://vinmec-dental-ekozjv903-23010196-9430s-projects.vercel.app",
+      "https://vinmec-detal-4sxn7brsr-23010196-9430s-projects.vercel.app",
+    ],
     methods: ["GET", "POST"],
     credentials: true,
   },
