@@ -36,10 +36,9 @@ const io = new SocketIOServer(server, {
     credentials: true,
   },
 });
-server.listen(PORT, '0.0.0.0', () => {
-  startJobs();
-  console.log(`🚀 Server running on port ${PORT}`);
-});// Setup WebRTC signaling
+const PORT = process.env.PORT;
+
+// Setup WebRTC signaling
 setupVideoCallSocket(io);
 
 // ─── Connect DB ──────────────────────────────────────────────────────────────
@@ -145,12 +144,11 @@ app.use(notFound);
 app.use(errorHandler);
 
 // ─── Start Server ─────────────────────────────────────────────────────────────
-server.listen(PORT, () => {
+server.listen(PORT, "0.0.0.0", () => {
   // Start background jobs after server is up
   startJobs();
   console.log(`\n🚀 VinaMec API running on port ${PORT}`);
   console.log(`   Mode:     ${process.env.NODE_ENV}`);
-  console.log(`   MongoDB:  ${process.env.MONGODB_URI}`);
   console.log(`   Uploads:  ${uploadDir}`);
   console.log(`   Socket:   WebRTC signaling active`);
   console.log(`   Health:   http://localhost:${PORT}/api/health\n`);
