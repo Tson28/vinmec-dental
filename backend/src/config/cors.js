@@ -8,6 +8,7 @@ const allowedOrigins = [
   'https://vinmec-dental.vercel.app',
   'https://vinmec-dental-ekozjv903-23010196-9430s-projects.vercel.app',
   'https://vinmec-detal-4sxn7brsr-23010196-9430s-projects.vercel.app',
+  'https://vinmec-detal-10sjftm86-23010196-9430s-projects.vercel.app',
   'https://vinmec-backend.onrender.com',
 ];
 
