@@ -10,6 +10,7 @@ const allowedOrigins = [
   'https://vinmec-detal-4sxn7brsr-23010196-9430s-projects.vercel.app',
   'https://vinmec-detal-10sjftm86-23010196-9430s-projects.vercel.app',
   'https://vinmec-detal.vercel.app',
+  'https://vinmec-detal-d5prtd5er-23010196-9430s-projects.vercel.app',
   'https://vinmec-backend.onrender.com',
 ];
 
