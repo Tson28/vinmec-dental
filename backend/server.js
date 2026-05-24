@@ -50,15 +50,15 @@ setupVideoCallSocket(io);
 // ─── Connect DB ──────────────────────────────────────────────────────────────
 connectDB();
 
+// ─── CORS ────────────────────────────────────────────────────────────────────
+app.use(cors(corsOptions));
+
 // ─── Security ────────────────────────────────────────────────────────────────
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
   }),
 );
-
-// ─── CORS ────────────────────────────────────────────────────────────────────
-app.use(cors(corsOptions));
 
 // ─── Rate Limiting ───────────────────────────────────────────────────────────
 app.use("/api/", globalLimiter);
