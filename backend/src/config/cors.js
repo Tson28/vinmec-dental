@@ -1,23 +1,22 @@
 'use strict';
 
 const allowedOrigins = [
-  process.env.FRONTEND_URL    || 'http://localhost:5173',
   'http://localhost:3000',
+  'http://localhost:5173',
   'http://localhost:5174',
   'http://127.0.0.1:5173',
-  'https://vinmec-dental.vercel.app',
-  'https://vinmec-dental-ekozjv903-23010196-9430s-projects.vercel.app',
-  'https://vinmec-detal-4sxn7brsr-23010196-9430s-projects.vercel.app',
-  'https://vinmec-detal-10sjftm86-23010196-9430s-projects.vercel.app',
-  'https://vinmec-detal.vercel.app',
-  'https://vinmec-detal-d5prtd5er-23010196-9430s-projects.vercel.app',
-  'https://vinmec-backend.onrender.com',
 ];
 
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
+    if (
+      origin.endsWith('.vercel.app') ||
+      origin.endsWith('.onrender.com') ||
+      allowedOrigins.includes(origin)
+    ) {
+      return callback(null, true);
+    }
     return callback(null, false);
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
